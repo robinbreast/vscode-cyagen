@@ -11,7 +11,7 @@ import { json } from "stream/consumers";
 export function activate(context: vscode.ExtensionContext) {
   // Use the console to output diagnostic information (console.log) and errors (console.error)
   // This line of code will only be executed once when your extension is activated
-  console.log('"vscode-cyagen" is now active!');
+  console.log('"vscode-cyagen" is now activating!');
 
   // The command has been defined in the package.json file
   // Now provide the implementation of the command with registerCommand
@@ -39,8 +39,20 @@ export function activate(context: vscode.ExtensionContext) {
       }
     }
   );
-
   context.subscriptions.push(disposable);
+
+  // retrieve custom commands from configuration
+  const configuration = vscode.workspace.getConfiguration('vscode-cyagen');
+  const customCommands: string[] = configuration.get('commands', []);
+  // register custom commands
+  for (const command of customCommands) {
+    const disposable = vscode.commands.registerCommand(`vscode-cyagen.${command}`, () => {
+      console.log(`Executing custom command: ${command}`);
+    });
+    // add the disposable to the extension context for cleanup
+    context.subscriptions.push(disposable);
+  }
+
 }
 
 // This method is called when your extension is deactivated

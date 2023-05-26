@@ -17,7 +17,21 @@
         "command": "vscode-cyagen.googletest",
         "title": "Cyagen: generate googletest skeleton"
       }
-    ]
+    ],
+    "configuration": {
+      "type": "object",
+      "title": "vscode-cyagen",
+      "properties": {
+        "vscode-cyagen.commands": {
+          "type": "array",
+          "default": [],
+          "description": "Custom commands for your own templates",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
