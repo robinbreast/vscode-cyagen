@@ -1,0 +1,32 @@
+#
+# Cantata Test-Level Options
+#
+# Any options set in this file will override the options set in the
+# project-level options file.
+#
+# WARNING: Do not alter this file manually.
+#
+# TIP-1: do not use "int const*" instead use "const int*"
+# TIP-2: do not use "func(void)" instead use "func()*"
+#
+#tool.testid=5593ed39-3350-4fff-b90d-1984d6c1b492
+"--ci:--instr:stmt;func;call;decn;log;"
+"--sa:--calc:*#*"
+@static-global-vars@"--sm:--access_variable:"@sourcename@.c":@name@"
+@end-static-global-vars@@static-local-vars@"--sm:--access_local_variable:"@sourcename@.c":@name@#@func-name@"
+@end-static-local-vars@
+@local-fncs@"--sm:--access_function:"@sourcename@.c":@name@(@atypes@)"
+@end-local-fncs@@ncls@"--sm:--wrap:@callee.name@(@callee.atypes@)#@caller.name@(@caller.atypes@)"
+@end-ncls@
+#User Section
+"--parse:--unsafe_access"
+"--parse:--warning_suppress:9001"
+"--parse:--warning_suppress:10427"
+"--ci:--no_instr:all"
+@fncs@"--ci:--instr:stmt;func;call;decn;log;#@name@"
+@end-fncs@
+#DEBUG OPTIONS: COMMENT OUT BEFORE DELIVERY
+#https://inside-docupedia.bosch.com/confluence/display/CSPMTarchive/Using+GDB+debugger+with+Cantata
+#"--parse:--line_directives"
+#"--ci:--no_instr:all"
+#"--keepmod"

@@ -1,7 +1,7 @@
 // vscode version with the same idea as cyagen in Rust
 // https://crates.io/crates/cyagen
 
-import * as fs from "fs";
+import { json } from "stream/consumers";
 
 export class Parser {
   public static getInstance(): Parser {
@@ -10,8 +10,18 @@ export class Parser {
     }
     return Parser._instance;
   }
-  public parse(sourceFilePath: string = "") {
+  public parse(sourceFilePath: string = "", sourcename = "") {
+    const fs = require("fs");
     this._code = fs.readFileSync(sourceFilePath, "utf-8");
+    if (sourcename === "") {
+      const path = require("path");
+      this._jsonData.sourcename = path.basename(
+        sourceFilePath,
+        path.extname(sourceFilePath)
+      );
+    } else {
+      this._jsonData.sourcename = sourcename;
+    }
     // remove all the comments
     const regex = /(\/\*([^*]|[\r\n]|(\*+([^*\/]|[\r\n])))*\*+\/)|(\/\/.*)/gi;
     this._code = this._code.replace(regex, "");
@@ -175,4 +185,15 @@ export class Parser {
     });
     this._jsonData.ncls = list;
   }
+}
+
+export function parse(filepath: string, sourcename = ""): any {
+  return Parser.getInstance().parse(filepath, sourcename);
+}
+export function generate(jsonData: {}, tempPath: string): string {
+  const fs = require("fs");
+  const nunjucks = require("nunjucks");
+  const tempString = fs.readFileSync(tempPath, "utf8");
+  const outputString = nunjucks.renderString(tempString, jsonData);
+  return outputString;
 }
