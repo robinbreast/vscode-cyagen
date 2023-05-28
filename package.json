@@ -70,7 +70,7 @@
     "nunjucks": "^3.2.4"
   },
   "files": [
-    "resources/templates/cantata/*.j2",
-    "resources/templates/googletest/*.j2"
+    "resources/templates/cantata/*.njk",
+    "resources/templates/googletest/*.njk"
   ]
 }

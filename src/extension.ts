@@ -81,13 +81,13 @@ function generateFiles(jsonData: any, tempDir: string, outputDir: string) {
               file.replace("@sourcename@", jsonData.sourcename)
             )
           );
-        } else if (stats.isFile() && path.extname(filePath) === ".j2") {
+        } else if (stats.isFile() && path.extname(filePath) === ".njk") {
           const outputString = cyagen.generate(jsonData, filePath);
           const outputFilePath = path.join(
             outputDir,
             file
               .replace("@sourcename@", jsonData.sourcename)
-              .replace(/\.j2$/, "")
+              .replace(/\.njk$/, "")
           );
           console.log(`Generating ${outputFilePath}`);
 
