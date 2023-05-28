@@ -9,26 +9,38 @@
   "categories": [
     "Other"
   ],
-  "activationEvents": [],
+  "activationEvents": [
+    "onLanguage:c"
+  ],
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
       {
-        "command": "vscode-cyagen.googletest",
-        "title": "Cyagen: generate googletest skeleton"
+        "command": "vscode-cyagen.generate",
+        "title": "Cyagen: generate files"
+      }
+    ],
+    "languages": [
+      {
+        "id": "c",
+        "extensions": [
+          ".c"
+        ]
       }
     ],
     "configuration": {
-      "type": "object",
-      "title": "vscode-cyagen",
+      "title": "Cyagen configuration",
       "properties": {
-        "vscode-cyagen.commands": {
+        "vscode-cyagen.customCommands": {
           "type": "array",
-          "default": [],
-          "description": "Custom commands for your own templates",
-          "items": {
-            "type": "string"
-          }
+          "default": [
+            {
+              "label": "googletest",
+              "templateFolder": "${extensionPath}/resources/templates/googletest",
+              "outputFolder": "${fileDirname}/googletest/ut_@sourcename@"
+            }
+          ],
+          "description": "Custom commands to generate files using user-defined templates"
         }
       }
     }

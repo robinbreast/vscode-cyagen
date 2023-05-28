@@ -12,47 +12,47 @@ export function activate(context: vscode.ExtensionContext) {
   // Use the console to output diagnostic information (console.log) and errors (console.error)
   // This line of code will only be executed once when your extension is activated
   console.log('"vscode-cyagen" is now activating!');
-
-  // The command has been defined in the package.json file
-  // Now provide the implementation of the command with registerCommand
-  // The commandId parameter must match the command field in package.json
   let disposable = vscode.commands.registerCommand(
-    "vscode-cyagen.googletest",
+    "vscode-cyagen.generate",
     () => {
-      // The code you place here will be executed every time your command is executed
+      const config = vscode.workspace.getConfiguration("vscode-cyagen");
+      const customCommands = config.get("customCommands", []);
       const filepath = vscode.window.activeTextEditor?.document.uri.fsPath;
       if (filepath && filepath.endsWith(".c")) {
+        const extensionPath = context.extensionPath;
+        const fileDirname = path.join(filepath, "..");
+        const quickPickItems = customCommands.map((command: any) => ({
+          label: command.label,
+          templateFolder: command.templateFolder,
+          outputFolder: command.outputFolder,
+        }));
+        console.log(`fileDirname=${fileDirname}`);
+        console.log(`extensionPath=${extensionPath}`);
         const sourceFilename = path.basename(filepath);
         const sourcename = path.basename(filepath, path.extname(filepath));
         const parser = cyagen.parse(filepath, sourcename);
-        console.log(parser.jsonData);
-        generateFiles(
-          parser.jsonData,
-          path.join(context.extensionPath, "resources/templates/googletest"),
-          // TODO: add setting for output dir
-          path.join(context.extensionPath, "generated")
-        );
-        const msg = `googletest script for ${sourceFilename} generated!`;
-        vscode.window.showInformationMessage(msg);
+        vscode.window.showQuickPick(quickPickItems).then((selectedItem) => {
+          if (selectedItem) {
+            console.log(parser.jsonData);
+            const templateFolder = selectedItem.templateFolder
+              .replace(/\$\{fileDirname\}/, fileDirname)
+              .replace(/\$\{extensionPath\}/, extensionPath)
+              .replace(/@sourcename@/, sourcename);
+            const outputFolder = selectedItem.outputFolder
+              .replace(/\$\{fileDirname\}/, fileDirname)
+              .replace(/\$\{extensionPath\}/, extensionPath)
+              .replace(/@sourcename@/, sourcename);
+            generateFiles(parser.jsonData, templateFolder, outputFolder);
+            const msg = `${selectedItem.label} script for ${sourceFilename} generated!`;
+            vscode.window.showInformationMessage(msg);
+          }
+        });
       } else {
         vscode.window.showInformationMessage("no c file found!");
       }
     }
   );
   context.subscriptions.push(disposable);
-
-  // retrieve custom commands from configuration
-  const configuration = vscode.workspace.getConfiguration('vscode-cyagen');
-  const customCommands: string[] = configuration.get('commands', []);
-  // register custom commands
-  for (const command of customCommands) {
-    const disposable = vscode.commands.registerCommand(`vscode-cyagen.${command}`, () => {
-      console.log(`Executing custom command: ${command}`);
-    });
-    // add the disposable to the extension context for cleanup
-    context.subscriptions.push(disposable);
-  }
-
 }
 
 // This method is called when your extension is deactivated
