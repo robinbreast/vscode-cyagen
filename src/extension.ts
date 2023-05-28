@@ -82,7 +82,7 @@ function generateFiles(jsonData: any, tempDir: string, outputDir: string) {
             )
           );
         } else if (stats.isFile() && path.extname(filePath) === ".njk") {
-          const outputString = cyagen.generate(jsonData, filePath);
+          let outputString = cyagen.generate(jsonData, filePath);
           const outputFilePath = path.join(
             outputDir,
             file
@@ -93,6 +93,32 @@ function generateFiles(jsonData: any, tempDir: string, outputDir: string) {
 
           if (!fs.existsSync(path.dirname(outputFilePath))) {
             fs.mkdirSync(path.dirname(outputFilePath), { recursive: true });
+          }
+          if (fs.existsSync(outputFilePath)) {
+            // Extract the manual sections from the legacy file using UUIDs
+            const manualSections = [
+              ...fs
+                .readFileSync(outputFilePath, "utf8")
+                .matchAll(
+                  /MANUAL SECTION: ([a-f0-9-]+)(.*?)MANUAL SECTION END/gs
+                ),
+            ];
+            // Merge the rendered template with the preserved manual sections
+            if (manualSections.length > 0) {
+              manualSections.forEach(([section, uuid, content]) => {
+                console.log(`section=\'${section}\'`);
+                console.log(`uuid=\'${uuid}\'`);
+                console.log(`content=\'${content}\'`);
+                const sectionPattern = new RegExp(
+                  `MANUAL SECTION: ${uuid}.*?MANUAL SECTION END`,
+                  "gs"
+                );
+                outputString = outputString.replace(
+                  sectionPattern,
+                  `MANUAL SECTION: ${uuid}` + content + 'MANUAL SECTION END'
+                );
+              });
+            }
           }
           fs.writeFile(outputFilePath, outputString, (err) => {
             if (err) {

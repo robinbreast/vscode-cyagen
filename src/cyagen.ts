@@ -193,6 +193,9 @@ export function parse(filepath: string, sourcename = ""): any {
 export function generate(jsonData: {}, tempPath: string): string {
   const fs = require("fs");
   const nunjucks = require("nunjucks");
+  const env = nunjucks.configure();
+  const generateUUID = require('./uuidGenerator');
+  env.addGlobal('generateUUID', generateUUID);
   const tempString = fs.readFileSync(tempPath, "utf8");
   const outputString = nunjucks.renderString(tempString, jsonData);
   return outputString;

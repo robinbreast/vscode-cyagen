@@ -8,7 +8,8 @@ extern "C" {
 {% for fnc in fncs -%}
 /// define a test case for the {{ fnc.name }} function
 TEST(Test_{{ sourcename }}Test, {{ fnc.name }}) {
-  /// TODO: complete test case
+  // MANUAL SECTION: {{ generateUUID(fnc.name) }}
+  // MANUAL SECTION END
 }
 {% endfor %}
 int main(int argc, char **argv) {

@@ -67,7 +67,9 @@
     "typescript": "^5.0.4"
   },
   "dependencies": {
-    "nunjucks": "^3.2.4"
+    "crypto": "^1.0.1",
+    "nunjucks": "^3.2.4",
+    "uuid": "^9.0.0"
   },
   "files": [
     "resources/templates/cantata/*.njk",
