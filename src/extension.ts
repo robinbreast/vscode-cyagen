@@ -4,7 +4,6 @@ import * as vscode from "vscode";
 import * as path from "path";
 import * as cyagen from "./cyagen";
 import * as fs from "fs";
-import { json } from "stream/consumers";
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
@@ -16,12 +15,12 @@ export function activate(context: vscode.ExtensionContext) {
     "vscode-cyagen.generate",
     () => {
       const config = vscode.workspace.getConfiguration("vscode-cyagen");
-      const customCommands = config.get("customCommands", []);
+      const templates = config.get("templates", []);
       const filepath = vscode.window.activeTextEditor?.document.uri.fsPath;
       if (filepath && filepath.endsWith(".c")) {
         const extensionPath = context.extensionPath;
         const fileDirname = path.join(filepath, "..");
-        const quickPickItems = customCommands.map((command: any) => ({
+        const quickPickItems = templates.map((command: any) => ({
           label: command.label,
           templateFolder: command.templateFolder,
           outputFolder: command.outputFolder,

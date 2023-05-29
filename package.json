@@ -17,7 +17,7 @@
     "commands": [
       {
         "command": "vscode-cyagen.generate",
-        "title": "Cyagen: generate files"
+        "title": "Cyagen: generate files using templates"
       }
     ],
     "languages": [
@@ -31,16 +31,16 @@
     "configuration": {
       "title": "Cyagen configuration",
       "properties": {
-        "vscode-cyagen.customCommands": {
+        "vscode-cyagen.templates": {
           "type": "array",
           "default": [
             {
-              "label": "googletest",
-              "templateFolder": "${extensionPath}/resources/templates/googletest",
-              "outputFolder": "${fileDirname}/googletest/ut_@sourcename@"
+              "label": "gtest",
+              "templateFolder": "${extensionPath}/resources/templates/gtest",
+              "outputFolder": "${fileDirname}/gtest/ut_@sourcename@"
             }
           ],
-          "description": "Custom commands to generate files using user-defined templates"
+          "description": "templates to render the identifiers in the current C file"
         }
       }
     }
@@ -72,7 +72,6 @@
     "uuid": "^9.0.0"
   },
   "files": [
-    "resources/templates/cantata/*.njk",
-    "resources/templates/googletest/*.njk"
+    "resources/templates/gtest/*.njk"
   ]
 }
