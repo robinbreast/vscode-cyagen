@@ -1,9 +1,14 @@
 /// this is generated google test script based on {{ sourcename }}.c
 
 #include <gtest/gtest.h>
+#include <gmock/gmock.h>
+
 extern "C" {
   #include "{{ sourcename }}.c"
 }
+
+// MANUAL SECTION: {{ generateUUID(sourcename) }}
+// MANUAL SECTION END
 
 {% for fnc in fncs -%}
 /// define a test case for the {{ fnc.name }} function
@@ -11,6 +16,10 @@ TEST(Test_{{ sourcename }}Test, {{ fnc.name }}) {
   // MANUAL SECTION: {{ generateUUID(fnc.name) }}
   // MANUAL SECTION END
 }
+{% endfor %}
+{% for ncl in ncls -%}
+// define a mock class for {{ ncl.callee.name }}
+// class
 {% endfor %}
 int main(int argc, char **argv) {
   ::testing::InitGoogleTest(&argc, argv);

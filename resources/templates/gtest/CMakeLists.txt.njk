@@ -14,7 +14,7 @@ set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
 
 enable_testing()
-include_directories(../example/source)
+include_directories({{ sourcedirname }})
 add_executable(
     test_{{ sourcename }}
     test_{{ sourcename }}.cc

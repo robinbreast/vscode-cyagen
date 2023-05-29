@@ -1,5 +1,7 @@
 // vscode version with the same idea as cyagen in Rust
 // https://crates.io/crates/cyagen
+import * as path from "path";
+import * as fs from "fs";
 
 export class Parser {
   public static getInstance(): Parser {
@@ -11,6 +13,7 @@ export class Parser {
   public parse(sourceFilePath: string = "", sourcename = "") {
     const fs = require("fs");
     this._code = fs.readFileSync(sourceFilePath, "utf-8");
+    this._jsonData.sourceFilePath = sourceFilePath;
     if (sourcename === "") {
       const path = require("path");
       this._jsonData.sourcename = path.basename(
@@ -188,13 +191,56 @@ export class Parser {
 export function parse(filepath: string, sourcename = ""): any {
   return Parser.getInstance().parse(filepath, sourcename);
 }
-export function generate(jsonData: {}, tempPath: string): string {
-  const fs = require("fs");
+export function generate(
+  jsonData: any = {},
+  tempPath: string,
+  outputFilePath: string
+) {
   const nunjucks = require("nunjucks");
   const env = nunjucks.configure();
-  const generateUUID = require('./uuidGenerator');
-  env.addGlobal('generateUUID', generateUUID);
+  const generateUUID = require("./uuidGenerator");
+  env.addGlobal("generateUUID", generateUUID);
   const tempString = fs.readFileSync(tempPath, "utf8");
-  const outputString = nunjucks.renderString(tempString, jsonData);
+  const sourcedirname = path.relative(
+    path.dirname(outputFilePath),
+    path.dirname(jsonData.sourceFilePath)
+  );
+  let outputString = nunjucks.renderString(tempString, {
+    ...jsonData,
+    ...{ sourcedirname: `${sourcedirname}` },
+  });
+  console.log(`Generating ${outputFilePath}`);
+  if (!fs.existsSync(path.dirname(outputFilePath))) {
+    fs.mkdirSync(path.dirname(outputFilePath), { recursive: true });
+  }
+  if (fs.existsSync(outputFilePath)) {
+    // Extract the manual sections from the legacy file using UUIDs
+    const manualSections = [
+      ...fs
+        .readFileSync(outputFilePath, "utf8")
+        .matchAll(/MANUAL SECTION: ([a-f0-9-]+)(.*?)MANUAL SECTION END/gs),
+    ];
+    // Merge the rendered template with the preserved manual sections
+    if (manualSections.length > 0) {
+      manualSections.forEach(([section, uuid, content]) => {
+        console.log(`section=\'${section}\'`);
+        console.log(`uuid=\'${uuid}\'`);
+        console.log(`content=\'${content}\'`);
+        const sectionPattern = new RegExp(
+          `MANUAL SECTION: ${uuid}.*?MANUAL SECTION END`,
+          "gs"
+        );
+        outputString = outputString.replace(
+          sectionPattern,
+          `MANUAL SECTION: ${uuid}` + content + "MANUAL SECTION END"
+        );
+      });
+    }
+  }
+  fs.writeFile(outputFilePath, outputString, (err) => {
+    if (err) {
+      console.error(`Error writing file: ${outputFilePath}`);
+    }
+  });
   return outputString;
 }
