@@ -1,13 +1,17 @@
-/// this is generated google test script based on {{ sourcename }}.c
+/// this is generated googletest script based on {{ sourcename }}.c
 
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
 extern "C" {
+// MANUAL SECTION: {{ generateUUID(sourcename ~ "extern") }}
+// MANUAL SECTION END
+
+  // include SUT
   #include "{{ sourcename }}.c"
 }
 
-// MANUAL SECTION: {{ generateUUID(sourcename) }}
+// MANUAL SECTION: {{ generateUUID(sourcename ~ "global") }}
 // MANUAL SECTION END
 
 {% for fnc in fncs -%}
