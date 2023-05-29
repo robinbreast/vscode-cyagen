@@ -37,7 +37,7 @@
             {
               "label": "gtest",
               "templateFolder": "${extensionPath}/resources/templates/gtest",
-              "outputFolder": "${fileDirname}/gtest/ut_@sourcename@"
+              "outputFolder": "${fileDirname}/gtest/test_@sourcename@"
             }
           ],
           "description": "templates to render the identifiers in the current C file"
