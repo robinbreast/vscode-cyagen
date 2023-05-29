@@ -1,8 +1,6 @@
 // vscode version with the same idea as cyagen in Rust
 // https://crates.io/crates/cyagen
 
-import { json } from "stream/consumers";
-
 export class Parser {
   public static getInstance(): Parser {
     if (!Parser._instance) {
