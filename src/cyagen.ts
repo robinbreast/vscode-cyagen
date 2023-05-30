@@ -49,7 +49,6 @@ export class Parser {
         .trim()
         .replace(/(\s|\*)\w+$/, "$1")
         .trim();
-      console.log(atype);
       // relocate 'const' only for 'datatype const *' -> 'const datatype *'
       const regex4const = /\w[\s\r\n]+const[\s\r\n]*\*/;
       if (regex4const.test(atype)) {
@@ -82,19 +81,23 @@ export class Parser {
   }
   private getIncs() {
     const list: {}[] = [];
+    const capList: string[] = [];
     const regex = /#include[\s]+["<].+[">]/gm;
     let match;
     while ((match = regex.exec(this._code)) !== null) {
-      const entry: any = {};
-      entry.captured = match[0];
-      list.push(entry);
+      if (!capList.includes(match[0])) {
+        capList.push(match[0]);
+        const entry: any = {};
+        entry.captured = match[0];
+        list.push(entry);
+      }
     }
     this._jsonData.incs = list;
   }
   private getFncs() {
     const list: {}[] = [];
     const regex =
-      /(?<return>[A-Za-z_]+[\w\s\*]*\s+)+(?<name>[A-Za-z_]+[\w]*)\s*\((?<args>[^=!><>;\(\)-]*)\)\s*\{/gm;
+      /((?<return>\w+[\w\s\*]*\s+)|FUNC\((?<return_ex>[^,]+),[^\)]+\)\s*)(?<name>\w+)[\w]*\s*\((?<args>[^=!><>;\(\)-]*)\)\s*\{/gm;
     let match;
     while ((match = regex.exec(this._code)) !== null) {
       const entry: any = {};
@@ -108,13 +111,15 @@ export class Parser {
         continue;
       }
       entry.captured = match[0];
-      const regex4static = /[\s\r\n]*static[\s\r\n]+/i;
+      const regex4static = /[\s\r\n]*(static|local_inline)[\s\r\n]+/i;
       entry.is_local = regex4static.test(entry.captured);
-      const _return = match.groups?.return;
+      const _return = match.groups?.return
+        ? match.groups?.return
+        : match.groups?.return_ex;
       if (_return) {
         entry.rtype = _return
           .trim()
-          .replace(/(static|inline)/gi, "")
+          .replace(/(static|inline|local_inline)/gi, "")
           .trim();
       } else {
         entry.rtype = "int";
@@ -223,9 +228,6 @@ export function generate(
     // Merge the rendered template with the preserved manual sections
     if (manualSections.length > 0) {
       manualSections.forEach(([section, uuid, content]) => {
-        console.log(`section=\'${section}\'`);
-        console.log(`uuid=\'${uuid}\'`);
-        console.log(`content=\'${content}\'`);
         const sectionPattern = new RegExp(
           `MANUAL SECTION: ${uuid}.*?MANUAL SECTION END`,
           "gs"
