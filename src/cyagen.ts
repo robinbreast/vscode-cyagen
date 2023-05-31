@@ -204,12 +204,19 @@ export function generate(
   const nunjucks = require("nunjucks");
   const env = nunjucks.configure();
   const generateUUID = require("./uuidGenerator");
+  const os = require("os");
   env.addGlobal("generateUUID", generateUUID);
   const tempString = fs.readFileSync(tempPath, "utf8");
-  const sourcedirname = path.relative(
-    path.dirname(outputFilePath),
-    path.dirname(jsonData.sourceFilePath)
-  );
+  let sourcedirname = path
+    .relative(
+      path.dirname(outputFilePath),
+      path.dirname(jsonData.sourceFilePath)
+    )
+    .split("/")
+    .join(path.sep);
+  if (os.platform() === "win32") {
+    sourcedirname = sourcedirname.replace(/\\/g, "\\\\");
+  }
   let outputString = nunjucks.renderString(tempString, {
     ...jsonData,
     ...{ sourcedirname: `${sourcedirname}` },
