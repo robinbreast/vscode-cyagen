@@ -16,6 +16,8 @@ FetchContent_MakeAvailable(googletest)
 enable_testing()
 include_directories(
   {{ sourcedirname | safe }}
+# MANUAL SECTION: {{ generateUUID(sourcename ~ "incdirs") }}
+# MANUAL SECTION END
 )
 add_executable(
     test_{{ sourcename }}
