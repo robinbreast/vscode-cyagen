@@ -2,6 +2,17 @@
 
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
+#include <string>
+#include <map>
+
+//////////////////////////////////////////////////////////////////////////////
+/// to access a local static variable from unit test script
+/// 1. add LOCAL_STATIC_VARIABLE(variable) after the declaration of the variable in the function
+/// 2. use ACCESS_LOCAL_STATIC_VARIABLE(fn, vn, vt) in unit test script
+std::map<std::pair<std::string, std::string>, void*> _local_static_variables;
+#define LOCAL_STATIC_VARIABLE(var) _local_static_variables[std::make_pair(__func__, #var)] = &var
+#define ACCESS_LOCAL_STATIC_VARIABLE(fn, vn, vt) *static_cast<vt *>([](){ try { return _local_static_variables.at(std::make_pair(#fn,#vn)); } catch (const std::exception& e) { fprintf(stderr,"(%s,%s) not existed\n",#fn,#vn); return (void*)nullptr; } }())
+//////////////////////////////////////////////////////////////////////////////
 
 extern "C" {
 // MANUAL SECTION: {{ generateUUID(sourcename ~ "extern") }}
