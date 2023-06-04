@@ -36,6 +36,16 @@ public:
     static Stub st;
     return st;
   }
+  {% for fnc in fncs -%}
+  {% for ncl in ncls -%}
+  {% if fnc.name == ncl.callee.name -%}
+  // check if alreay in the list
+  MOCK_METHOD({{ fnc.rtype }}, {{ fnc.name }}, ({{ fnc.atypes }}));
+  {% endif -%}
+  {% endfor -%}
+  {% endfor -%}
+
+  /// stub functions
   // MANUAL SECTION: {{ generateUUID(sourcename ~ "stub") }}
   // MOCK_METHOD(<return>, <stub_func1>, (<arg1>, ...) ());
   // MOCK_METHOD(<return>, <stub_func2>, (<arg1>, ...) ());
@@ -49,19 +59,11 @@ extern "C"
   // MANUAL SECTION: {{ generateUUID(sourcename ~ "extern") }}
   // MANUAL SECTION END
 
-  /// redirect external functions to stub functions
-  // MANUAL SECTION: {{ generateUUID(sourcename ~ "stub-macro-define") }}
-  // #define stub_func1 Stub::getInstance().stub_func1
-  // #define stub_func2 Stub::getInstance().stub_func2
-  // MANUAL SECTION END
   // include SUT
   #include "{{ sourcename }}.c"
-  /// restore external functions
-  // MANUAL SECTION: {{ generateUUID(sourcename ~ "stub-macro-undef") }}
-  // #undef stub_func1
-  // #define stub_func1 stub_func1
-  // #undef stub_func2
-  // #define stub_func2 stub_func2
+
+  /// stub functions; use Stub::getInstance().stub_func()
+  // MANUAL SECTION: {{ generateUUID(sourcename ~ "stub-functions") }}
   // MANUAL SECTION END
 }
 
@@ -73,18 +75,12 @@ extern "C"
 
 {% for fnc in fncs -%}
 /// define a test case for the {{ fnc.name }} function
-TEST(Test_{{ sourcename }}Test, {{ fnc.name }}) {
+TEST({{ sourcename }}, {{ fnc.name }}) {
   // MANUAL SECTION: {{ generateUUID(fnc.name) }}
   // MANUAL SECTION END
 }
 {% endfor %}
-{% for fnc in fncs -%}
-{% for ncl in ncls -%}
-{% if fnc.name == ncl.callee.name -%}
-// {{ ncl.caller.name }} calls {{ ncl.callee.name }}
-{% endif -%}
-{% endfor -%}
-{% endfor %}
+
 int main(int argc, char **argv) {
   ::testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
