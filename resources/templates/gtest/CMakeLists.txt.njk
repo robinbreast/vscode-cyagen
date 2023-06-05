@@ -3,7 +3,9 @@ project(test_{{ sourcename }})
 
 # GoogleTest requires at least C++14
 set(CMAKE_CXX_STANDARD 14)
-cmake_policy(SET CMP0135 NEW)
+# MANUAL SECTION: {{ generateUUID(sourcename ~ "cmake-config") }}
+#cmake_policy(SET CMP0135 NEW)
+# MANUAL SECTION END
 
 include(FetchContent)
 FetchContent_Declare(

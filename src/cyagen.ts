@@ -147,16 +147,17 @@ export class Parser {
   }
   private getStaticVars() {
     const list: {}[] = [];
-    const regex = /(static)\s+(?<captured>[^\(\{;=]+)[;=]/gim;
+    const regex = /(static\s+|static\s+const\s+|const\s+static\s+)+(.*?)(\w+)\s*(?:\[(.*?)\])?\s*(?:=\s*(\{.*?\}|.*?))?;/gim;
     let match;
     while ((match = regex.exec(this._code)) !== null) {
       const entry: any = {};
-      entry.captured = match.groups?.captured.trim();
-      entry.name_expr = entry.captured.match(/[\s*]+([^*\s]+)[*\s]*$/)?.[1];
-      entry.name = entry.name_expr.match(/^([^[\]]+)/)?.[1];
-      entry.dtype = entry.captured
-        .substring(0, entry.captured.lastIndexOf(entry.name))
-        .trim();
+      const [, keyword, dtype, name, arraySize, value] = match;
+      entry.captured = match[0];
+      entry.name_expr = (arraySize !== undefined) ? `${name}[${arraySize}]` : name;
+      entry.name = name.trim();
+      entry.dtype = dtype.trim();
+      entry.init = (value !== undefined) ? (value.trim() === "" ? "0" : value.trim()) : "0";
+      entry.is_const = ((keyword !== undefined && keyword.includes('const')) || dtype.includes('const'));
       entry.is_local = false;
       entry.func_name = "";
       this._jsonData.fncs.forEach((fnc: any) => {

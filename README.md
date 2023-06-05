@@ -1,10 +1,15 @@
 # vscode-cyagen README
 
-This is the README for your extension "vscode-cyagen". After writing up a brief description, we recommend including the following sections.
+vscode-cyagen is based on the same idea as [cyagen](https://crates.io/crates/cyagen) but realizedd as a vscode extension.
 
 ## Features
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
+File generator to reduce the manual efforts to prepare another scripting files which contains C code information derived by a C source file.
+- Scan C source file using the simple pattern matching to capture the identifiers in the code
+- Generate text based files using the given template files
+- Supported identifiers are inclusion, local variables, and functions
+
+![Demo](resources/images/vscode-cyagen-demo.gif)
 
 For example if there is an image subfolder under your extension project workspace:
 
@@ -24,8 +29,8 @@ For example:
 
 This extension contributes the following settings:
 
-* `myExtension.enable`: Enable/disable this extension.
-* `myExtension.thing`: Set to `blah` to do something.
+* `vscode-cyagen.enable`: Enable/disable this extension.
+* `vscode-cyagen.thing`: Set to `blah` to do something.
 
 ## Known Issues
 
@@ -65,7 +70,6 @@ You can author your README using Visual Studio Code. Here are some useful editor
 
 ## For more information
 
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
+* [repository](https://github.com/robinbreast/vscode-cyagen)
 
 **Enjoy!**
