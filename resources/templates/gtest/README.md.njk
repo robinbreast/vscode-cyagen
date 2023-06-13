@@ -115,6 +115,15 @@ void checkTimeout(void)
 - **@sourcename@** is the filename (witout extension) of SUT
 
 ## 5. Complete UT script
+- open **target_@sourcename@.h** (target_sample.h in this example)
+- add extra missing declaration as below. this can be noticed after first compilation
+```
+/// any extra missing information from target source
+// MANUAL SECTION: 2031379f-64d9-58d3-a6e3-e0137e0848a3
+#define MOTOR_LEFT_PIN 10
+#define MOTOR_RIGHT_PIN 11
+// MANUAL SECTION END
+```
 - open **wrapper_@sourcename@.h** (wrapper_sample.h in this example)
 - add missing stub functions within **MANUAL SECTION** in **Mock** class as below
 ```cpp
