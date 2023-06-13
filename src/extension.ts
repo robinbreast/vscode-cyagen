@@ -30,31 +30,49 @@ export function activate(context: vscode.ExtensionContext) {
         const sourceFilename = path.basename(filepath);
         const sourcename = path.basename(filepath, path.extname(filepath));
         const parser = cyagen.parse(filepath, sourcename);
-        vscode.window.showQuickPick(quickPickItems).then((selectedItem) => {
-          if (selectedItem) {
-            console.log(parser.jsonData);
-            const templateFolder = selectedItem.templateFolder
-              .replace(/\$\{fileDirname\}/, fileDirname)
-              .replace(/\$\{extensionPath\}/, extensionPath)
-              .replace(/@sourcename@/, sourcename);
-            const outputFolder = selectedItem.outputFolder
-              .replace(/\$\{fileDirname\}/, fileDirname)
-              .replace(/\$\{extensionPath\}/, extensionPath)
-              .replace(/@sourcename@/, sourcename);
-            if (
-              fs.existsSync(templateFolder) &&
-              fs.statSync(templateFolder).isDirectory() &&
-              fs.readdirSync(templateFolder).length > 0
-            ) {
-              generateFiles(parser.jsonData, templateFolder, outputFolder);
-              const msg = `${selectedItem.label} script for ${sourceFilename} generated!`;
-              vscode.window.showInformationMessage(msg);
-            } else {
-              const msg = `template files for ${selectedItem.label} are not available`;
-              vscode.window.showErrorMessage(msg);
+        vscode.window
+          .showQuickPick(quickPickItems)
+          .then(async (selectedItem) => {
+            if (selectedItem) {
+              console.log(parser.jsonData);
+              const templateFolder = selectedItem.templateFolder
+                .replace(/\$\{fileDirname\}/, fileDirname)
+                .replace(/\$\{extensionPath\}/, extensionPath)
+                .replace(/@sourcename@/, sourcename);
+              const outputFolder = selectedItem.outputFolder
+                .replace(/\$\{fileDirname\}/, fileDirname)
+                .replace(/\$\{extensionPath\}/, extensionPath)
+                .replace(/@sourcename@/, sourcename);
+              if (
+                fs.existsSync(templateFolder) &&
+                fs.statSync(templateFolder).isDirectory() &&
+                fs.readdirSync(templateFolder).length > 0
+              ) {
+                generateFiles(parser.jsonData, templateFolder, outputFolder);
+                const msg = `${selectedItem.label} script for ${sourceFilename} generated!`;
+                vscode.window.showInformationMessage(msg);
+              } else {
+                const msg = `no available template files for ${selectedItem.label}`;
+                const choice = await vscode.window.showErrorMessage(
+                  msg,
+                  { modal: true },
+                  "Open Template Folder",
+                  "Reveal in Explorer"
+                );
+                if (choice === "Open Template Folder") {
+                  vscode.commands.executeCommand(
+                    "vscode.openFolder",
+                    vscode.Uri.file(path.dirname(templateFolder))
+                  );
+                } else if (choice === "Reveal in Explorer") {
+                  vscode.commands.executeCommand(
+                    "revealFileInOS",
+                    vscode.Uri.file(path.dirname(templateFolder))
+                  );
+                }
+              }
             }
-          }
-        });
+          });
       } else {
         vscode.window.showInformationMessage("no c file found!");
       }
