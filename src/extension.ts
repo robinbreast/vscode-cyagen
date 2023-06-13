@@ -41,9 +41,18 @@ export function activate(context: vscode.ExtensionContext) {
               .replace(/\$\{fileDirname\}/, fileDirname)
               .replace(/\$\{extensionPath\}/, extensionPath)
               .replace(/@sourcename@/, sourcename);
-            generateFiles(parser.jsonData, templateFolder, outputFolder);
-            const msg = `${selectedItem.label} script for ${sourceFilename} generated!`;
-            vscode.window.showInformationMessage(msg);
+            if (
+              fs.existsSync(templateFolder) &&
+              fs.statSync(templateFolder).isDirectory() &&
+              fs.readdirSync(templateFolder).length > 0
+            ) {
+              generateFiles(parser.jsonData, templateFolder, outputFolder);
+              const msg = `${selectedItem.label} script for ${sourceFilename} generated!`;
+              vscode.window.showInformationMessage(msg);
+            } else {
+              const msg = `template files for ${selectedItem.label} are not available`;
+              vscode.window.showErrorMessage(msg);
+            }
           }
         });
       } else {
