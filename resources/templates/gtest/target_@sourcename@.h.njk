@@ -1,0 +1,36 @@
+#ifndef TARGET_{{ sourcename | upper }}_H
+#define TARGET_{{ sourcename | upper }}_H
+
+extern "C"
+{
+// includes for SUT
+{%- for inc in incs %}
+{%- if not inc.captured.includes('_MemMap.h') %}
+{{ inc.captured | safe }}
+{%- endif %}
+{%- endfor %}
+// MANUAL SECTION: {{ generateUUID(sourcename ~ "extern") }}
+// MANUAL SECTION END
+}
+
+/// local date types
+{%- for td in typedefs %}
+{{ td.captured }};
+{%- endfor %}
+
+/// any extra missing information from target source
+// MANUAL SECTION: {{ generateUUID(sourcename ~ "extra") }}
+// MANUAL SECTION END
+
+#define ACCESS_LOCAL_STATIC_VARIABLE(funcname, varname) _##funcname##_##varname
+
+/// local static variables
+{%- for var in static_vars %}
+{%- if var.is_local %}
+extern {{ var.dtype }} ACCESS_LOCAL_STATIC_VARIABLE({{ var.func_name }}, {{ var.name_expr }});
+{%- else %}
+extern {{ var.dtype }} {{ var.name_expr }};
+{%- endif %}
+{%- endfor %}
+
+#endif //!defined(TARGET_{{ sourcename | upper }}_H)

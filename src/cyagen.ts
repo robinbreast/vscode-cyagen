@@ -2,6 +2,7 @@
 // https://crates.io/crates/cyagen
 import * as path from "path";
 import * as fs from "fs";
+import * as vscode from "vscode";
 
 export class Parser {
   public static getInstance(): Parser {
@@ -28,8 +29,10 @@ export class Parser {
     this._code = this._code.replace(regex, "");
     // parse c file and build json data
     this.getIncs();
+    this.getTypedefs();
     this.getFncs();
     this.getStaticVars();
+    this.getLocalStaticVars(); // only for googletest to detect the pattern "LOCAL_STATIC_VARIABLE(dtype, varname, init)"
     this.getNcls();
     return this;
   }
@@ -40,29 +43,36 @@ export class Parser {
   private _jsonData: any = {};
   private _code = "";
   private constructor() {}
-  private getAtypes(args: string): string {
+  private getAtypes(args: string): [string, string] {
     let atypes = "";
+    let anames = "";
     let firstPos = true;
     const argList = args.split(",");
     argList.forEach((arg) => {
-      let atype = arg
-        .trim()
-        .replace(/(\s|\*)\w+$/, "$1")
-        .trim();
-      // relocate 'const' only for 'datatype const *' -> 'const datatype *'
-      const regex4const = /\w[\s\r\n]+const[\s\r\n]*\*/;
-      if (regex4const.test(atype)) {
-        atype = atype.replace("const", "");
-        atype = `const ${atype}`.replace(/\s+/, " ");
+      const regex = /^(.*?)(\w+)$/;
+      let match = arg.match(regex);
+      let atype = "";
+      let aname = "";
+      if (match) {
+        atype = match[1].trim();
+        aname = match[2].trim();
+        // relocate 'const' only for 'datatype const *' -> 'const datatype *'
+        const regex4const = /\w[\s\r\n]+const[\s\r\n]*\*/;
+        if (regex4const.test(atype)) {
+          atype = atype.replace("const", "");
+          atype = `const ${atype}`.replace(/\s+/, " ");
+        }
+        if (firstPos) {
+          firstPos = false;
+        } else {
+          atypes += ", ";
+          anames += ", ";
+        }
+        atypes += atype;
+        anames += aname;
       }
-      if (firstPos) {
-        firstPos = false;
-      } else {
-        atypes += ", ";
-      }
-      atypes += atype;
     });
-    return atypes;
+    return [atypes, anames];
   }
   private findEndOfFunc(start: number): number {
     let level = 1;
@@ -93,6 +103,17 @@ export class Parser {
       }
     }
     this._jsonData.incs = list;
+  }
+  private getTypedefs() {
+    const list: {}[] = [];
+    const regex = /^(typedef\s+[.\s\S]+?);/gm;
+    let match;
+    while ((match = regex.exec(this._code)) !== null) {
+      const entry: any = {};
+      entry.captured = match[1];
+      list.push(entry);
+    }
+    this._jsonData.typedefs = list;
   }
   private getFncs() {
     const list: {}[] = [];
@@ -132,7 +153,9 @@ export class Parser {
           entry.atypes = "";
         } else {
           entry.args = args;
-          entry.atypes = this.getAtypes(args);
+          const [atypes, anames] = this.getAtypes(args);
+          entry.atypes = atypes;
+          entry.anames = anames;
         }
       } else {
         entry.args = "";
@@ -145,19 +168,23 @@ export class Parser {
     }
     this._jsonData.fncs = list;
   }
-  private getStaticVars() {
+  private getLocalStaticVars() {
     const list: {}[] = [];
-    const regex = /(static\s+|static\s+const\s+|const\s+static\s+)+(.*?)(\w+)\s*(?:\[(.*?)\])?\s*(?:=\s*(\{.*?\}|.*?))?;/gim;
+    const regex =
+      /LOCAL_STATIC_VARIABLE\((\w+)\s*,(.*?)\s*,\s*(\w+)\s*(?:\[(.*?)\])?\s*,\s*(.*?)\).*?;/gim;
     let match;
     while ((match = regex.exec(this._code)) !== null) {
       const entry: any = {};
-      const [, keyword, dtype, name, arraySize, value] = match;
+      const [, funcName, dtype, name, arraySize, value] = match;
       entry.captured = match[0];
-      entry.name_expr = (arraySize !== undefined) ? `${name}[${arraySize}]` : name;
+      entry.name_expr =
+        arraySize !== undefined ? `${name}[${arraySize}]` : name;
+      entry.array_size = arraySize !== undefined ? parseInt(arraySize) : 0;
       entry.name = name.trim();
       entry.dtype = dtype.trim();
-      entry.init = (value !== undefined) ? (value.trim() === "" ? "0" : value.trim()) : "0";
-      entry.is_const = ((keyword !== undefined && keyword.includes('const')) || dtype.includes('const'));
+      entry.init =
+        value !== undefined ? (value.trim() === "" ? "0" : value.trim()) : "0";
+      entry.is_const = dtype.includes("const");
       entry.is_local = false;
       entry.func_name = "";
       this._jsonData.fncs.forEach((fnc: any) => {
@@ -168,6 +195,49 @@ export class Parser {
         ) {
           entry.is_local = true;
           entry.func_name = fnc.name;
+          if (entry.func_name !== funcName) {
+            const msg = `mismatched function name **${entry.func_name}** vs. **${funcName}**`;
+            console.log(msg);
+            vscode.window.showWarningMessage(msg);
+          }
+        }
+      });
+      list.push(entry);
+    }
+    this._jsonData.static_vars = this._jsonData.static_vars.concat(list);
+  }
+  private getStaticVars() {
+    const list: {}[] = [];
+    const regex =
+      /(static\s+|static\s+const\s+|const\s+static\s+)+(.*?)(\w+)\s*(?:\[(.*?)\])?\s*(?:=\s*(\{.*?\}|.*?))?;/gim;
+    let match;
+    while ((match = regex.exec(this._code)) !== null) {
+      const entry: any = {};
+      const [, keyword, dtype, name, arraySize, value] = match;
+      entry.captured = match[0];
+      entry.name_expr =
+        arraySize !== undefined ? `${name}[${arraySize}]` : name;
+      entry.array_size = arraySize !== undefined ? parseInt(arraySize) : 0;
+      entry.name = name.trim();
+      entry.dtype = dtype.trim();
+      entry.init =
+        value !== undefined ? (value.trim() === "" ? "0" : value.trim()) : "0";
+      entry.is_const =
+        (keyword !== undefined && keyword.includes("const")) ||
+        dtype.includes("const");
+      entry.is_local = false;
+      entry.func_name = "";
+      this._jsonData.fncs.forEach((fnc: any) => {
+        if (
+          this._code
+            .substring(fnc._idxBegin, fnc._idxEnd)
+            .includes(entry.captured)
+        ) {
+          entry.is_local = true;
+          entry.func_name = fnc.name;
+          const msg = `found **${entry.name}** in **${entry.func_name}**\n -> use *LOCAL_STATIC_VARIABLE* macro`;
+          console.log(msg);
+          vscode.window.showWarningMessage(msg);
         }
       });
       list.push(entry);
@@ -218,10 +288,17 @@ export function generate(
   if (os.platform() === "win32") {
     sourcedirname = sourcedirname.replace(/\\/g, "\\\\");
   }
-  let outputString = nunjucks.renderString(tempString, {
-    ...jsonData,
-    ...{ sourcedirname: `${sourcedirname}` },
-  });
+  let outputString = "";
+  try {
+    outputString = nunjucks.renderString(tempString, {
+      ...jsonData,
+      ...{ sourcedirname: `${sourcedirname}` },
+    });
+  } catch (error) {
+      const msg = `**${tempPath}**:\n${error}`;
+      console.log(msg);
+      vscode.window.showWarningMessage(msg);
+  }
   console.log(`Generating ${outputFilePath}`);
   if (!fs.existsSync(path.dirname(outputFilePath))) {
     fs.mkdirSync(path.dirname(outputFilePath), { recursive: true });

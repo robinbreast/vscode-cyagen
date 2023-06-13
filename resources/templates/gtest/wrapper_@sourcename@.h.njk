@@ -1,0 +1,114 @@
+#ifndef WRAPPER_{{ sourcename | upper }}_H
+#define WRAPPER_{{ sourcename | upper }}_H
+
+#include "target_{{ sourcename }}.h"
+#include <gtest/gtest.h>
+#include <gmock/gmock.h>
+#include <stdio.h>
+#include <dlfcn.h>
+
+/// broker for mock instance
+class Mock;
+class MockBroker
+{
+public:
+  MockBroker(MockBroker const &) = delete;
+  MockBroker(MockBroker &&) = delete;
+  MockBroker &operator=(MockBroker const &) = delete;
+  MockBroker &operator=(MockBroker &&) = delete;
+  static auto &getInstance()
+  {
+    static MockBroker mb;
+    return mb;
+  }
+  void set(Mock *mock)
+  {
+    m_mock = mock;
+  }
+  Mock* get(void)
+  {
+    EXPECT_NE(m_mock, nullptr);
+    return m_mock;
+  }
+
+private:
+  Mock *m_mock{nullptr};
+  MockBroker() {}
+};
+/// mock class for stubbing
+class Mock
+{
+public:
+  Mock() { MockBroker::getInstance().set(this); }
+  ~Mock() { MockBroker::getInstance().set(nullptr); }
+
+  /// stub functions
+  // MANUAL SECTION: {{ generateUUID(sourcename ~ "stub") }}
+  // MOCK_METHOD(<return>, <stub_func1>, (<arg1>, ...) ());
+  // MOCK_METHOD(<return>, <stub_func2>, (<arg1>, ...) ());
+  // MANUAL SECTION END
+
+  {% set callees = [] -%}
+  /// nested functions for call sequence checks
+  {%- for fnc in fncs -%}
+    {%- for ncl in ncls -%}
+      {%- if fnc.name == ncl.callee.name -%}
+        {%- if fnc.name not in callees %}
+  MOCK_METHOD({{ fnc.rtype }}, {{ fnc.name }}, ({{ fnc.atypes }}));
+          {%- set _ = callees.push(fnc.name) -%}
+        {%- endif -%}
+      {%- endif -%}
+    {%- endfor -%}
+  {%- endfor %}
+};
+
+#define CALL_MOCK_FUNCTION(funcname, ...) MockBroker::getInstance().get()->funcname(__VA_ARGS__)
+#define CALL_REAL_FUNCTION(funcname, ...) real_##funcname(__VA_ARGS__)
+#define WRAPPER_LOG(fmt, ...) \
+  fprintf(stderr, "\n\x1b\[90m%s:%d:\x1b[m\n\x1b[34m[%s]\x1b[m, " fmt, __FILE__, __LINE__, __func__, ##__VA_ARGS__)
+#define STUB_LOG(fmt, ...) \
+  fprintf(stderr, "\n\x1b\[90m%s:%d:\x1b[m\n\x1b[35m[%s]\x1b[m, " fmt, __FILE__, __LINE__, __func__, ##__VA_ARGS__)
+
+extern "C"
+{
+/// stub functions
+// MANUAL SECTION: {{ generateUUID(sourcename ~ "stub-functions") }}
+// MANUAL SECTION END
+
+{% set callees = [] -%}
+/// wrapper functions for nested calls
+{%- for fnc in fncs -%}
+{%- for ncl in ncls -%}
+  {%- if fnc.name == ncl.callee.name -%}
+    {%- if fnc.name not in callees %}
+{{ fnc.captured }}
+  WRAPPER_LOG("before");
+  // MANUAL SECTION: {{ generateUUID(fnc.name ~ "wrapper-before") }}
+  // MANUAL SECTION END
+  {% if fnc.rtype != 'void' %}return {% endif %}CALL_MOCK_FUNCTION({{ fnc.name }}{% if fnc.anames is defined and args != '' %}, {{ fnc.anames }}{% else %}{% endif %});
+  WRAPPER_LOG("after");
+  // MANUAL SECTION: {{ generateUUID(fnc.name ~ "wrapper-after") }}
+  // MANUAL SECTION END
+{{ '}' }}
+      {%- set _ = callees.push(fnc.name) -%}
+    {%- endif -%}
+  {%- endif -%}
+{%- endfor -%}
+{%- endfor %}
+
+/// real function pointers
+{%- for fnc in fncs %}
+{{ fnc.rtype }} (*real_{{ fnc.name }})({{ fnc.atypes }}) = nullptr;
+{%- endfor %}
+
+/// load real function pointers when loading target binary
+__attribute__((constructor))
+void load_real_function(void)
+{{ '{' }}
+  {%- for fnc in fncs %}
+  real_{{ fnc.name }} = reinterpret_cast<{{ fnc.rtype }} (*)({{ fnc.atypes }})>(dlsym(RTLD_NEXT, "{{ fnc.name }}"));
+  {%- endfor %}
+{{ '}' }}
+}
+
+#endif //!defined(WRAPPER_{{ sourcename | upper }}_H)

@@ -1,107 +1,42 @@
 /// this is generated googletest script based on {{ sourcename }}.c
 
-#include <gtest/gtest.h>
-#include <gmock/gmock.h>
-#include <string>
-#include <map>
-
-//////////////////////////////////////////////////////////////////////////////
-/// to access a local static variable from unit test script
-/// LOCAL_STATIC_VARIABLE(datatype, variable) after the declaration of the variable in the function
-std::map<std::pair<std::string, std::string>, std::pair<void*, void*>> _local_static_vars;
-#define LOCAL_STATIC_VARIABLE(dtype, var) \
-  do {\
-    _local_static_vars[std::make_pair(__func__, #var)].first = &var;\
-    var = *(dtype*)_local_static_vars[std::make_pair(__func__, #var)].second;\
-  } while (0)
-
-extern "C"
-{
-  // MANUAL SECTION: {{ generateUUID(sourcename ~ "extern") }}
-  // MANUAL SECTION END
-
-  // include SUT
-  #include "{{ sourcename }}.c"
-}
-
-/// Stub class for stub functions
-class Stub
-{
-public:
-  Stub(Stub const &) = delete;
-  Stub(Stub &&) = delete;
-  Stub &operator=(Stub const &) = delete;
-  Stub &operator=(Stub &&) = delete;
-  static auto &getInstance()
-  {
-    static Stub st;
-    return st;
-  }
-  {% set callees = [] -%}
-  /// nested functions for call sequence checks
-  {%- for fnc in fncs -%}
-    {%- for ncl in ncls -%}
-      {%- if fnc.name == ncl.callee.name -%}
-        {%- if fnc.name not in callees %}
-  MOCK_METHOD({{ fnc.rtype }}, {{ fnc.name }}, ({{ fnc.atypes }}));
-          {%- set _ = callees.push(fnc.name) -%}
-        {%- endif -%}
-      {%- endif -%}
-    {%- endfor -%}
-  {%- endfor %}
-
-  /// stub functions
-  // MANUAL SECTION: {{ generateUUID(sourcename ~ "stub") }}
-  // MOCK_METHOD(<return>, <stub_func1>, (<arg1>, ...) ());
-  // MOCK_METHOD(<return>, <stub_func2>, (<arg1>, ...) ());
-  // MANUAL SECTION END
-
-private:
-  Stub(){}
-};
-
-extern "C"
-{
-  /// stub functions; use Stub::getInstance().stub_func()
-  // MANUAL SECTION: {{ generateUUID(sourcename ~ "stub-functions") }}
-  // MANUAL SECTION END
-}
-
-#define LOCAL_STATIC_VARIABLE_WRITE(fn, vn, val) \
-  do {\
-    _##fn##_##vn = val;\
-  } while (0)
-#define LOCAL_STATIC_VARIABLE_READ(fn, vn, vt) *static_cast<vt *>([](){ try { return _local_static_vars.at(std::make_pair(#fn,#vn)).first; } catch (const std::exception& e) { fprintf(stderr,"(%s,%s) not existed\n",#fn,#vn); return (void*)nullptr; } }())
-//////////////////////////////////////////////////////////////////////////////
-
-/// usage of EXPECT_CALL() for stub functions
-// EXPECT_CALL(Stub::getInstance(), stub_func1()).WillOnce(::testing::Return(1));
+#include "wrapper_{{ sourcename }}.h"
 
 // MANUAL SECTION: {{ generateUUID(sourcename ~ "global") }}
 // MANUAL SECTION END
 
 /// test fixture for test case
-/// local static variables
-{% for var in static_vars -%}
-{% if var.is_local -%}
-static {{ var.dtype }} _{{ var.func_name }}_{{ var.name }};
-{% endif -%}
-{% endfor %}
-class {{ sourcename | capitalize }} : public ::testing::Test {
+class {{ sourcename | capitalize }} : public ::testing::Test
+{
 protected:
-  void SetUp() override {
-    {% for var in static_vars -%}
-    {% if var.is_local -%}
-    _{{ var.func_name }}_{{ var.name }} = {{ var.init }};
-    _local_static_vars[std::make_pair("{{ var.func_name }}", "{{ var.name }}")].second = &_{{ var.func_name }}_{{ var.name }};
-    {% else -%}
-    {{ var.name }} = {{ var.init }};
-    {% endif -%}
-    {% endfor -%}
+  void SetUp() override
+  {
+{%- for var in static_vars %}
+  {%- if var.array_size !== 0 %}
+    {%- if var.is_local %}
+    // MANUAL SECTION: {{ generateUUID(var.func_name ~ var.name ~ "init") }}
+    // TODO: adapt initialization according to your test plan
+    memset(ACCESS_LOCAL_STATIC_VARIABLE({{ var.func_name}}, {{ var.name }}), 0, sizeof(ACCESS_LOCAL_STATIC_VARIABLE({{ var.func_name }}, {{ var.name }})));
+    // MANUAL SECTION END
+    {%- else %}
+    // MANUAL SECTION: {{ generateUUID(var.name ~ "init") }}
+    // TODO: adapt initialization according to your test plan
+    memset({{ var.name }}, 0, sizeof({{ var.name }}));
+    // MANUAL SECTION END
+    {%- endif %}
+  {%- else %}
+    {%- if var.is_local %}
+    ACCESS_LOCAL_STATIC_VARIABLE({{ var.func_name }}, {{ var.name_expr }}) = {{ var.init }};
+    {%- else %}
+    {{ var.name_expr }} = {{ var.init }};
+    {%- endif %}
+  {%- endif %}
+{%- endfor %}
     // MANUAL SECTION: {{ generateUUID(sourcename ~ "setup") }}
     // MANUAL SECTION END
   }
-  void TearDown() override {
+  void TearDown() override
+  {
     // MANUAL SECTION: {{ generateUUID(sourcename ~ "teardown") }}
     // MANUAL SECTION END
   }
@@ -109,13 +44,15 @@ protected:
 
 {% for fnc in fncs -%}
 /// define a test case for the {{ fnc.name }}() function
-TEST_F({{ sourcename | capitalize }}, {{ fnc.name }}) {
+TEST_F({{ sourcename | capitalize }}, {{ fnc.name }})
+{
   // MANUAL SECTION: {{ generateUUID(fnc.name) }}
   // MANUAL SECTION END
 }
 {% endfor %}
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   ::testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
 }

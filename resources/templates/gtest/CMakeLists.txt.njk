@@ -24,16 +24,18 @@ include_directories(
 # MANUAL SECTION: {{ generateUUID(sourcename ~ "cmake-incdirs") }}
 # MANUAL SECTION END
 )
-add_executable(
-    test_{{ sourcename }}
-    test_{{ sourcename }}.cc
+add_library(target SHARED target_{{ sourcename }}.cc)
+add_executable(test_{{ sourcename }}
+  test_{{ sourcename }}.cc
 # MANUAL SECTION: {{ generateUUID(sourcename ~ "cmake-sources") }}
 # MANUAL SECTION END
 )
-target_link_libraries(
-    test_{{ sourcename }}
-    GTest::gtest_main
-    GTest::gmock_main
+set_target_properties(test_{{ sourcename }} PROPERTIES LINK_FLAGS
+  "-Wl,-rpath='$ORIGIN'")
+target_link_libraries(test_{{ sourcename }}
+  GTest::gtest_main
+  GTest::gmock_main
+  target
 # MANUAL SECTION: {{ generateUUID(sourcename ~ "cmake-linklibs") }}
 # MANUAL SECTION END
 )

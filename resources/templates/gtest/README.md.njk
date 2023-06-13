@@ -1,8 +1,12 @@
 ## 1. Prepare SUT as below
 ### sample.c
-```
+```cpp
 #include <stdio.h>
 #include <stdint.h>
+
+#if !defined(LOCAL_STATIC_VARIABLE)
+# define LOCAL_STATIC_VARIABLE(funcname, datatype, varname, initvalue) static datatype varname = initvalue
+#endif //!defined(LOCAL_STATIC_VARIABLE)
 
 typedef enum
 {
@@ -21,16 +25,13 @@ static uint32_t timeLeft = 0U;
 static uint32_t lastTimestamp = 0U;
 static uint8_t pinUpdated = 0U;
 
-extern uint32_t
-getCurrentTime();
+extern uint32_t getCurrentTime();
 extern void controlPin(uint8_t pin, uint8_t high);
 
 void controlMotor(void)
 {
-    static uint8_t pinLeft = 0U;
-    static uint8_t pinRight = 0U;
-    LOCAL_STATIC_VARIABLE(pinLeft);
-    LOCAL_STATIC_VARIABLE(pinRight);
+    LOCAL_STATIC_VARIABLE(controlMotor, uint8_t, pinLeft, 0U);
+    LOCAL_STATIC_VARIABLE(controlMotor, uint8_t, pinRight, 0U);
     if (0U == pinUpdated)
     {
         uint8_t left = 0, right = 0;
@@ -114,67 +115,102 @@ void checkTimeout(void)
 - **@sourcename@** is the filename (witout extension) of SUT
 
 ## 5. Complete UT script
-- open **test_@sourcename@.cc** (test_sample.cc in this example)
-- add missing stub functions within **MANUAL SECTION** as below
-```
+- open **wrapper_@sourcename@.h** (wrapper_sample.h in this example)
+- add missing stub functions within **MANUAL SECTION** in **Mock** class as below
+```cpp
   /// stub functions
   // MANUAL SECTION: d93bc5d9-008c-5b86-9858-dba6854f4266
   MOCK_METHOD(uint32_t, getCurrentTime, ());
   MOCK_METHOD(void, controlPin, (uint8_t, uint8_t));
   // MANUAL SECTION END
 ```
-```
+- add missing stub funciton implementation within **MANUAL SECTION** in `extern "C" {}` closure as below
+```cpp
 extern "C"
 {
-  /// stub functions; use Stub::getInstance().stub_func()
-  // MANUAL SECTION: 7c512ffc-1a83-57e3-8c38-ddde70ff83be
-  uint32_t getCurrentTime()
-  {
-    return Stub::getInstance().getCurrentTime();
-  }
-  void controlPin(uint8_t pin, uint8_t high)
-  {
-    return Stub::getInstance().controlPin(pin, high);
-  }
+/// stub functions
+// MANUAL SECTION: 7c512ffc-1a83-57e3-8c38-ddde70ff83be
+uint32_t getCurrentTime()
+{
+  STUB_LOG();
+  return CALL_MOCK_FUNCTION(getCurrentTime);
+}
+void controlPin(uint8_t pin, uint8_t high)
+{
+  STUB_LOG("pin=%u, high=%u", pin, high);
+  CALL_MOCK_FUNCTION(controlPin, pin, high);
+}
+// MANUAL SECTION END
+```
+- open **test_@sourcename@.cc** (test_sample.cc in this example)
+- complete test functions within **MANUAL SECTION** as below
+```cpp
+/// define a test case for the controlMotor() function
+TEST_F(Sample, controlMotor)
+{
+  // MANUAL SECTION: cf139424-4850-5640-aab9-dc3ae9584c7d
+  // prepare precondition & expected calls
+  Mock mock;
+  ::testing::Sequence seq;
+  EXPECT_CALL(mock, controlPin(testing::Eq(MOTOR_LEFT_PIN), testing::Eq(1))).InSequence(seq);
+  EXPECT_CALL(mock, controlPin(testing::Eq(MOTOR_RIGHT_PIN), testing::Eq(1))).InSequence(seq);
+  ACCESS_LOCAL_STATIC_VARIABLE(controlMotor, pinLeft) = 0U;
+  ACCESS_LOCAL_STATIC_VARIABLE(controlMotor, pinRight) = 0U;
+  currDir = Forward;
+  pinUpdated = 0U;
+  // call SUT
+  CALL_REAL_FUNCTION(controlMotor);
+  // prepare precondition & expected calls
+  EXPECT_CALL(mock, controlPin(testing::Eq(MOTOR_LEFT_PIN), testing::Eq(0))).InSequence(seq);
+  EXPECT_CALL(mock, controlPin(testing::Eq(MOTOR_RIGHT_PIN), testing::Eq(1))).InSequence(seq);
+  ACCESS_LOCAL_STATIC_VARIABLE(controlMotor, pinLeft) = 1U;
+  ACCESS_LOCAL_STATIC_VARIABLE(controlMotor, pinRight) = 0U;
+  currDir = TurnRight;
+  pinUpdated = 0U;
+  // call SUT
+  CALL_REAL_FUNCTION(controlMotor);
+  EXPECT_EQ(ACCESS_LOCAL_STATIC_VARIABLE(controlMotor, pinLeft), 0U);
   // MANUAL SECTION END
 }
-```
-- complete test functions within **MANUAL SECTION** as below
-```
+/// define a test case for the setDir() function
+TEST_F(Sample, setDir)
+{
+  // MANUAL SECTION: c75fc7fa-078f-5ceb-b381-ff2288a65a57
+  // MANUAL SECTION END
+}
 /// define a test case for the move() function
-TEST(sample, move) {
+TEST_F(Sample, move)
+{
   // MANUAL SECTION: afd5313d-1dfd-5f93-8fba-47d757174a4d
   // prepare precondition & expected calls
   ::testing::Sequence seq;
-  EXPECT_CALL(Stub::getInstance(), getCurrentTime()).Times(1).InSequence(seq).WillOnce(::testing::Return(10));
-  EXPECT_CALL(Stub::getInstance(), controlMotor()).Times(1).InSequence(seq).WillRepeatedly([]() { pinUpdated = 1U; });
-
+  Mock mock;
+  EXPECT_CALL(mock, setDir(testing::Eq(Forward))).Times(1).InSequence(seq);
+  EXPECT_CALL(mock, getCurrentTime()).Times(1).InSequence(seq).WillOnce(::testing::Return(10));
+  EXPECT_CALL(mock, controlMotor()).Times(1).InSequence(seq).WillRepeatedly([]() { pinUpdated = 1U; });
   // call SUT
-  move(Forward, 10);
-
-  // check results
-  EXPECT_EQ(currDir, Forward);
+  CALL_REAL_FUNCTION(move, Forward, 10);
+  // check result
   EXPECT_EQ(timeLeft, 10);
   EXPECT_EQ(lastTimestamp, 10);
   EXPECT_EQ(pinUpdated, 1U);
   // MANUAL SECTION END
 }
 /// define a test case for the checkTimeout() function
-TEST(sample, checkTimeout) {
+TEST_F(Sample, checkTimeout)
+{
   // MANUAL SECTION: 7968e4aa-0cb9-5a90-8491-21484676bf99
   // prepare precondition & expected calls
   ::testing::Sequence seq;
+  Mock mock;
   lastTimestamp = 0U;
-  timeLeft = 10;
-  currDir = Forward;
-  EXPECT_CALL(Stub::getInstance(), getCurrentTime()).Times(1).InSequence(seq).WillOnce(::testing::Return(10));
-  EXPECT_CALL(Stub::getInstance(), controlMotor()).Times(1).InSequence(seq).WillRepeatedly([]() { pinUpdated = 1U; });
-
+  timeLeft = 12;
+  EXPECT_CALL(mock, getCurrentTime()).InSequence(seq).WillOnce(::testing::Return(10));
+  //EXPECT_CALL(mock, controlMotor()).InSequence(seq);
   // call SUT
-  checkTimeout();
-
-  // check results
-  EXPECT_EQ(currDir, Idle);
+  CALL_REAL_FUNCTION(checkTimeout);
+  // check result
+  EXPECT_EQ(timeLeft, 2);
   // MANUAL SECTION END
 }
 ```
@@ -189,6 +225,22 @@ $ cmake --build build
 ## 7. Run test
 ```
 $ cd build && ctest --rerun-failed --output-on-failure
+```
+```
+❯ ctest
+Test project ~/repo/github/cyagen/example/tst/gtest/test_sample/build
+    Start 1: Sample.controlMotor
+1/4 Test #1: Sample.controlMotor ..............   Passed    0.00 sec
+    Start 2: Sample.setDir
+2/4 Test #2: Sample.setDir ....................   Passed    0.00 sec
+    Start 3: Sample.move
+3/4 Test #3: Sample.move ......................   Passed    0.00 sec
+    Start 4: Sample.checkTimeout
+4/4 Test #4: Sample.checkTimeout ..............   Passed    0.00 sec
+
+100% tests passed, 0 tests failed out of 4
+
+Total Test time (real) =   0.01 sec
 ```
 
 Refer to the [link](https://google.github.io/googletest/quickstart-cmake.html)
