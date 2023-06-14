@@ -301,12 +301,19 @@ TEST_F(Sample, checkTimeout)
 - adapt CMakeLists.txt by adding missing include path
 
 ## 6. Build test
+- command line
 ```
 $ cmake -S . -B build
 $ cmake --build build
 ```
+- using vscode
+  - open folder via vscode
+  - select kit for compiler
+  - press F1 and select `CMake: configure`
+  - press F7 to build
 
 ## 7. Run test
+- command line
 ```
 $ cd build && ctest --rerun-failed --output-on-failure
 ```
@@ -326,6 +333,9 @@ Test project ~/repo/github/cyagen/example/tst/gtest/test_sample/build
 
 Total Test time (real) =   0.01 sec
 ```
+- using vscode
+  - run tests in `Testing` pannel
+  - press F5 to debug (launch.json file is alos generated)
 
 ## 8. Using **Testing** pannel in vscode
 tasks.json and launch.json are already generated under .vscode folder. you can run test or debug test from the panel.

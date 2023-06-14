@@ -44,7 +44,7 @@ public:
 
   /// stub functions
   // MANUAL SECTION: {{ generateUUID(sourcename ~ "stub") }}
-  // MOCK_METHOD(int, stubExample, ());
+  // MOCK_METHOD(int, stubExample, (int));
   // MANUAL SECTION END
 
   {% set callees = [] -%}
@@ -76,10 +76,10 @@ extern "C"
 /// stub functions
 // MANUAL SECTION: {{ generateUUID(sourcename ~ "stub-functions") }}
 /* example code
-int stubExample()
+int stubExample(int arg)
 {
   LOG_STUB();
-  return CALL_MOCK_FUNCTION(stubExample)
+  return CALL_MOCK_FUNCTION(stubExample, arg);
 }
 */
 // MANUAL SECTION END
