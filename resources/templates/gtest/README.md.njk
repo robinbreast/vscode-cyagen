@@ -4,9 +4,9 @@
 #include <stdio.h>
 #include <stdint.h>
 
-#if !defined(LOCAL_STATIC_VARIABLE)
-# define LOCAL_STATIC_VARIABLE(funcname, datatype, varname, initvalue) static datatype varname = initvalue
-#endif //!defined(LOCAL_STATIC_VARIABLE)
+#if !defined({{ lsvMacroName }})
+# define {{ lsvMacroName }}(funcname, datatype, varname, initvalue) static datatype varname = initvalue
+#endif //!defined({{ lsvMacroName }})
 
 typedef enum
 {
@@ -30,8 +30,8 @@ extern void controlPin(uint8_t pin, uint8_t high);
 
 void controlMotor(void)
 {
-    LOCAL_STATIC_VARIABLE(controlMotor, uint8_t, pinLeft, 0U);
-    LOCAL_STATIC_VARIABLE(controlMotor, uint8_t, pinRight, 0U);
+    {{ lsvMacroName }}(controlMotor, uint8_t, pinLeft, 0U);
+    {{ lsvMacroName }}(controlMotor, uint8_t, pinRight, 0U);
     if (0U == pinUpdated)
     {
         uint8_t left = 0, right = 0;
@@ -141,12 +141,12 @@ extern "C"
 // MANUAL SECTION: 7c512ffc-1a83-57e3-8c38-ddde70ff83be
 uint32_t getCurrentTime()
 {
-  STUB_LOG();
+  LOG_STUB();
   return CALL_MOCK_FUNCTION(getCurrentTime);
 }
 void controlPin(uint8_t pin, uint8_t high)
 {
-  STUB_LOG("pin=%u, high=%u", pin, high);
+  LOG_STUB("pin=%u, high=%u", pin, high);
   CALL_MOCK_FUNCTION(controlPin, pin, high);
 }
 // MANUAL SECTION END
@@ -158,9 +158,12 @@ void controlPin(uint8_t pin, uint8_t high)
 TEST_F(Sample, controlMotor)
 {
   // MANUAL SECTION: cf139424-4850-5640-aab9-dc3ae9584c7d
-  // prepare precondition & expected calls
   Mock mock;
   ::testing::Sequence seq;
+  /////////////////////////////////////////////////////////////////////////////////////////////////
+  /// step-1.
+  LOG_TEST("Step-1");
+  // prepare precondition & expected calls
   EXPECT_CALL(mock, controlPin(testing::Eq(MOTOR_LEFT_PIN), testing::Eq(1))).InSequence(seq);
   EXPECT_CALL(mock, controlPin(testing::Eq(MOTOR_RIGHT_PIN), testing::Eq(1))).InSequence(seq);
   ACCESS_LOCAL_STATIC_VARIABLE(controlMotor, pinLeft) = 0U;
@@ -169,6 +172,12 @@ TEST_F(Sample, controlMotor)
   pinUpdated = 0U;
   // call SUT
   CALL_REAL_FUNCTION(controlMotor);
+  // check result
+  EXPECT_EQ(ACCESS_LOCAL_STATIC_VARIABLE(controlMotor, pinLeft), 1U);
+  EXPECT_EQ(ACCESS_LOCAL_STATIC_VARIABLE(controlMotor, pinRight), 1U);
+  /////////////////////////////////////////////////////////////////////////////////////////////////
+  /// step-2.
+  LOG_TEST("Step-2");
   // prepare precondition & expected calls
   EXPECT_CALL(mock, controlPin(testing::Eq(MOTOR_LEFT_PIN), testing::Eq(0))).InSequence(seq);
   EXPECT_CALL(mock, controlPin(testing::Eq(MOTOR_RIGHT_PIN), testing::Eq(1))).InSequence(seq);
@@ -178,13 +187,62 @@ TEST_F(Sample, controlMotor)
   pinUpdated = 0U;
   // call SUT
   CALL_REAL_FUNCTION(controlMotor);
+  // check result
   EXPECT_EQ(ACCESS_LOCAL_STATIC_VARIABLE(controlMotor, pinLeft), 0U);
+  EXPECT_EQ(ACCESS_LOCAL_STATIC_VARIABLE(controlMotor, pinRight), 1U);
+  /////////////////////////////////////////////////////////////////////////////////////////////////
+  /// step-3.
+  LOG_TEST("Step-3");
+  // prepare precondition & expected calls
+  EXPECT_CALL(mock, controlPin(testing::Eq(MOTOR_LEFT_PIN), testing::Eq(1))).InSequence(seq);
+  EXPECT_CALL(mock, controlPin(testing::Eq(MOTOR_RIGHT_PIN), testing::Eq(0))).InSequence(seq);
+  ACCESS_LOCAL_STATIC_VARIABLE(controlMotor, pinLeft) = 0U;
+  ACCESS_LOCAL_STATIC_VARIABLE(controlMotor, pinRight) = 1U;
+  currDir = TurnLeft;
+  pinUpdated = 0U;
+  // call SUT
+  CALL_REAL_FUNCTION(controlMotor);
+  // check result
+  EXPECT_EQ(ACCESS_LOCAL_STATIC_VARIABLE(controlMotor, pinLeft), 1U);
+  EXPECT_EQ(ACCESS_LOCAL_STATIC_VARIABLE(controlMotor, pinRight), 0U);
+  /////////////////////////////////////////////////////////////////////////////////////////////////
+  /// step-4.
+  LOG_TEST("Step-4");
+  // prepare precondition & expected calls
+  EXPECT_CALL(mock, controlPin(testing::Eq(MOTOR_LEFT_PIN), testing::Eq(0))).InSequence(seq);
+  EXPECT_CALL(mock, controlPin(testing::Eq(MOTOR_RIGHT_PIN), testing::Eq(0))).InSequence(seq);
+  ACCESS_LOCAL_STATIC_VARIABLE(controlMotor, pinLeft) = 1U;
+  ACCESS_LOCAL_STATIC_VARIABLE(controlMotor, pinRight) = 1U;
+  currDir = Idle;
+  pinUpdated = 0U;
+  // call SUT
+  CALL_REAL_FUNCTION(controlMotor);
+  // check result
+  EXPECT_EQ(ACCESS_LOCAL_STATIC_VARIABLE(controlMotor, pinLeft), 0U);
+  EXPECT_EQ(ACCESS_LOCAL_STATIC_VARIABLE(controlMotor, pinRight), 0U);
+  /////////////////////////////////////////////////////////////////////////////////////////////////
+  /// step-5.
+  LOG_TEST("Step-5");
+  // prepare precondition & expected calls
+  EXPECT_CALL(mock, controlPin(testing::Eq(MOTOR_LEFT_PIN), testing::Eq(0))).InSequence(seq);
+  EXPECT_CALL(mock, controlPin(testing::Eq(MOTOR_RIGHT_PIN), testing::Eq(0))).InSequence(seq);
+  ACCESS_LOCAL_STATIC_VARIABLE(controlMotor, pinLeft) = 1U;
+  ACCESS_LOCAL_STATIC_VARIABLE(controlMotor, pinRight) = 1U;
+  currDir = MaxDirection;
+  pinUpdated = 0U;
+  // call SUT
+  CALL_REAL_FUNCTION(controlMotor);
+  // check result
+  EXPECT_EQ(ACCESS_LOCAL_STATIC_VARIABLE(controlMotor, pinLeft), 0U);
+  EXPECT_EQ(ACCESS_LOCAL_STATIC_VARIABLE(controlMotor, pinRight), 0U);
   // MANUAL SECTION END
 }
 /// define a test case for the setDir() function
 TEST_F(Sample, setDir)
 {
   // MANUAL SECTION: c75fc7fa-078f-5ceb-b381-ff2288a65a57
+  CALL_REAL_FUNCTION(setDir, Forward);
+  EXPECT_EQ(currDir, Forward);
   // MANUAL SECTION END
 }
 /// define a test case for the move() function
@@ -209,17 +267,34 @@ TEST_F(Sample, move)
 TEST_F(Sample, checkTimeout)
 {
   // MANUAL SECTION: 7968e4aa-0cb9-5a90-8491-21484676bf99
-  // prepare precondition & expected calls
   ::testing::Sequence seq;
   Mock mock;
+  /////////////////////////////////////////////////////////////////////////////////////////////////
+  /// step-1.
+  LOG_TEST("Step-1");
+  // prepare precondition & expected calls
   lastTimestamp = 0U;
   timeLeft = 12;
   EXPECT_CALL(mock, getCurrentTime()).InSequence(seq).WillOnce(::testing::Return(10));
-  //EXPECT_CALL(mock, controlMotor()).InSequence(seq);
+  EXPECT_CALL(mock, setDir(testing::_)).Times(0).InSequence(seq);
+  EXPECT_CALL(mock, controlMotor()).Times(0).InSequence(seq);
   // call SUT
   CALL_REAL_FUNCTION(checkTimeout);
   // check result
   EXPECT_EQ(timeLeft, 2);
+  /////////////////////////////////////////////////////////////////////////////////////////////////
+  /// step-2.
+  LOG_TEST("Step-2");
+  // prepare precondition & expected calls
+  lastTimestamp = 0U;
+  timeLeft = 10;
+  EXPECT_CALL(mock, getCurrentTime()).InSequence(seq).WillOnce(::testing::Return(10));
+  EXPECT_CALL(mock, setDir(testing::Eq(Idle))).Times(1).InSequence(seq);
+  EXPECT_CALL(mock, controlMotor()).Times(1).InSequence(seq);
+  // call SUT
+  CALL_REAL_FUNCTION(checkTimeout);
+  // check result
+  EXPECT_EQ(timeLeft, 0);
   // MANUAL SECTION END
 }
 ```
@@ -256,3 +331,25 @@ Total Test time (real) =   0.01 sec
 tasks.json and launch.json are already generated under .vscode folder. you can run test or debug test from the panel.
 
 Refer to the [link](https://google.github.io/googletest/quickstart-cmake.html)
+
+## 9. Code coverage
+1. install `lcov`
+- for Linux or WSL
+  ```
+  $ sudo apt install lcov
+  ```
+- for Windows
+  - install chocolatey according to [link](https://docs.chocolatey.org/en-us/choco/setup#non-administrative-install); you can install choco w/o administrator right but you need admin right later when installing a package
+  - install `lcov` using choco (open PowerShell with admin right)
+    ```
+    $ choco install lcov
+    ```
+2. test coverage report
+- generate report
+  ```
+  $ cd build
+  $ make test_coverage
+  ```
+- open report `build/coverage_report/index.html` 
+3. recommended vscode extension
+- alexdima.vscode-lcov: it's already listed in `.vscode/settings.json`

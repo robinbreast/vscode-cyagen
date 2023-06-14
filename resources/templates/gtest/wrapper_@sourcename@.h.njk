@@ -44,8 +44,7 @@ public:
 
   /// stub functions
   // MANUAL SECTION: {{ generateUUID(sourcename ~ "stub") }}
-  // MOCK_METHOD(<return>, <stub_func1>, (<arg1>, ...));
-  // MOCK_METHOD(<return>, <stub_func2>, (<arg1>, ...));
+  // MOCK_METHOD(int, stubExample, ());
   // MANUAL SECTION END
 
   {% set callees = [] -%}
@@ -64,15 +63,25 @@ public:
 
 #define CALL_MOCK_FUNCTION(funcname, ...) MockBroker::getInstance().get()->funcname(__VA_ARGS__)
 #define CALL_REAL_FUNCTION(funcname, ...) real_##funcname(__VA_ARGS__)
-#define WRAPPER_LOG(fmt, ...) \
-  fprintf(stderr, "\n\x1b\[90m%s:%d:\x1b[m\n\x1b[34m[%s]\x1b[m, " fmt, __FILE__, __LINE__, __func__, ##__VA_ARGS__)
-#define STUB_LOG(fmt, ...) \
-  fprintf(stderr, "\n\x1b\[90m%s:%d:\x1b[m\n\x1b[35m[%s]\x1b[m, " fmt, __FILE__, __LINE__, __func__, ##__VA_ARGS__)
+#define LOG_WRAP(fmt, ...) \
+  fprintf(stderr, "\n\x1b\[90m%s:%d:\x1b[m\n\x1b[34m[WRAP:%s]\x1b[m, " fmt, __FILE__, __LINE__, __func__, ##__VA_ARGS__)
+#define LOG_STUB(fmt, ...) \
+  fprintf(stderr, "\n\x1b\[90m%s:%d:\x1b[m\n\x1b[35m[STUB:%s]\x1b[m, " fmt, __FILE__, __LINE__, __func__, ##__VA_ARGS__)
+#define LOG_TEST(fmt, ...) \
+  fprintf(stderr, "\n\x1b\[90m%s:%d:\x1b[m\n\x1b[36m[TEST:%s]\x1b[m, " fmt, __FILE__, __LINE__,\
+        ::testing::UnitTest::GetInstance()->current_test_info()->name(), ##__VA_ARGS__)
 
 extern "C"
 {
 /// stub functions
 // MANUAL SECTION: {{ generateUUID(sourcename ~ "stub-functions") }}
+/* example code
+int stubExample()
+{
+  LOG_STUB();
+  return CALL_MOCK_FUNCTION(stubExample)
+}
+*/
 // MANUAL SECTION END
 
 {% set callees = [] -%}
@@ -82,11 +91,11 @@ extern "C"
   {%- if fnc.name == ncl.callee.name -%}
     {%- if fnc.name not in callees %}
 {{ fnc.captured }}
-  WRAPPER_LOG("before");
+  LOG_WRAP("before");
   // MANUAL SECTION: {{ generateUUID(fnc.name ~ "wrapper-before") }}
   // MANUAL SECTION END
   {% if fnc.rtype != 'void' %}return {% endif %}CALL_MOCK_FUNCTION({{ fnc.name }}{% if fnc.anames is defined and args != '' %}, {{ fnc.anames }}{% else %}{% endif %});
-  WRAPPER_LOG("after");
+  LOG_WRAP("after");
   // MANUAL SECTION: {{ generateUUID(fnc.name ~ "wrapper-after") }}
   // MANUAL SECTION END
 {{ '}' }}

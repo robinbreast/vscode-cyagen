@@ -16,7 +16,7 @@ protected:
     {%- if var.is_local %}
     // MANUAL SECTION: {{ generateUUID(var.func_name ~ var.name ~ "init") }}
     // TODO: adapt initialization according to your test plan
-    memset(ACCESS_LOCAL_STATIC_VARIABLE({{ var.func_name}}, {{ var.name }}), 0, sizeof(ACCESS_LOCAL_STATIC_VARIABLE({{ var.func_name }}, {{ var.name }})));
+    memset(ACCESS_{{ lsvMacroName }}({{ var.func_name}}, {{ var.name }}), 0, sizeof(ACCESS_{{ lsvMacroName }}({{ var.func_name }}, {{ var.name }})));
     // MANUAL SECTION END
     {%- else %}
     // MANUAL SECTION: {{ generateUUID(var.name ~ "init") }}
@@ -26,7 +26,7 @@ protected:
     {%- endif %}
   {%- else %}
     {%- if var.is_local %}
-    ACCESS_LOCAL_STATIC_VARIABLE({{ var.func_name }}, {{ var.name_expr }}) = {{ var.init }};
+    ACCESS_{{ lsvMacroName }}({{ var.func_name }}, {{ var.name_expr }}) = {{ var.init }};
     {%- else %}
     {{ var.name_expr }} = {{ var.init }};
     {%- endif %}
@@ -50,6 +50,10 @@ TEST_F({{ sourcename | capitalize }}, {{ fnc.name }})
   // MANUAL SECTION END
 }
 {% endfor %}
+
+/// add yet another tests
+// MANUAL SECTION: {{ generateUUID(sourcename ~ "yet-another-tests") }}
+// MANUAL SECTION END
 
 int main(int argc, char **argv)
 {

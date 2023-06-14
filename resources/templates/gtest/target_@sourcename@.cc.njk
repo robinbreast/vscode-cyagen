@@ -1,8 +1,8 @@
 
 //////////////////////////////////////////////////////////////////////////////
 /// to access a local static variable from unit test script
-/// to use LOCAL_STATIC_VARIABLE(funcname, datatype, varname, initvalue) in target source
-#define LOCAL_STATIC_VARIABLE(funcname, datatype, varname, initvalue) \
+/// to use {{ lsvMacroName }}(funcname, datatype, varname, initvalue) in target source
+#define {{ lsvMacroName }}(funcname, datatype, varname, initvalue) \
     datatype& varname = _##funcname##_##varname
 
 extern "C"
@@ -36,6 +36,8 @@ extern "C"
 # define STATIC __attribut__((visibility("default")))
 #endif //defined(STATIC)
 
+#define inline
+#define INLINE
 #define static
 
 /// include SUT

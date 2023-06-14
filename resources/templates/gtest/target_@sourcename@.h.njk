@@ -22,12 +22,12 @@ extern "C"
 // MANUAL SECTION: {{ generateUUID(sourcename ~ "extra") }}
 // MANUAL SECTION END
 
-#define ACCESS_LOCAL_STATIC_VARIABLE(funcname, varname) _##funcname##_##varname
+#define ACCESS_{{ lsvMacroName }}(funcname, varname) _##funcname##_##varname
 
 /// local static variables
 {%- for var in static_vars %}
 {%- if var.is_local %}
-extern {{ var.dtype }} ACCESS_LOCAL_STATIC_VARIABLE({{ var.func_name }}, {{ var.name_expr }});
+extern {{ var.dtype }} ACCESS_{{ lsvMacroName }}({{ var.func_name }}, {{ var.name_expr }});
 {%- else %}
 extern {{ var.dtype }} {{ var.name_expr }};
 {%- endif %}

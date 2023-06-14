@@ -3,8 +3,13 @@ project(test_{{ sourcename }})
 
 # GoogleTest requires at least C++14
 set(CMAKE_CXX_STANDARD 14)
+if(POLICY CMP0135)
+  cmake_policy(SET CMP0135 NEW)
+endif()
+
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fprofile-arcs -ftest-coverage")
+# Additional cmake configs
 # MANUAL SECTION: {{ generateUUID(sourcename ~ "cmake-config") }}
-#cmake_policy(SET CMP0135 NEW)
 # MANUAL SECTION END
 
 include(FetchContent)
@@ -41,3 +46,14 @@ target_link_libraries(test_{{ sourcename }}
 )
 include(GoogleTest)
 gtest_discover_tests(test_{{ sourcename }})
+
+# Add a custom target to run the tests and generate code coverage data
+add_custom_target(test_coverage
+    COMMAND ${CMAKE_CTEST_COMMAND} --verbose
+    COMMAND lcov --capture --directory . --output-file coverage.info
+    COMMAND lcov --remove coverage.info '/usr/*' '*/test_*' '*/googletest/*' '*/googlemock/*' --output-file cleaned_coverage.info
+    COMMAND lcov --list cleaned_coverage.info
+    COMMAND genhtml cleaned_coverage.info --output-directory coverage_report
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+    COMMENT "Running tests with coverage and generating coverage report"
+)

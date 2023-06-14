@@ -11,7 +11,11 @@ export class Parser {
     }
     return Parser._instance;
   }
-  public parse(sourceFilePath: string = "", sourcename = "") {
+  public parse(
+    sourceFilePath: string = "",
+    sourcename = "",
+    lsvMacroName = ""
+  ) {
     const fs = require("fs");
     this._code = fs.readFileSync(sourceFilePath, "utf-8");
     this._jsonData.sourceFilePath = sourceFilePath;
@@ -24,6 +28,7 @@ export class Parser {
     } else {
       this._jsonData.sourcename = sourcename;
     }
+    this._jsonData.lsvMacroName = lsvMacroName;
     // remove all the comments
     const regex = /(\/\*([^*]|[\r\n]|(\*+([^*\/]|[\r\n])))*\*+\/)|(\/\/.*)/gi;
     this._code = this._code.replace(regex, "");
@@ -170,8 +175,11 @@ export class Parser {
   }
   private getLocalStaticVars() {
     const list: {}[] = [];
-    const regex =
-      /LOCAL_STATIC_VARIABLE\((\w+)\s*,(.*?)\s*,\s*(\w+)\s*(?:\[(.*?)\])?\s*,\s*(.*?)\).*?;/gim;
+    //const regex = /LOCAL_STATIC_VARIABLE\((\w+)\s*,(.*?)\s*,\s*(\w+)\s*(?:\[(.*?)\])?\s*,\s*(.*?)\).*?;/gim;
+    const regex = new RegExp(
+      `${this._jsonData.lsvMacroName}\\((\\w+)\\s*,(.*?)\\s*,\\s*(\\w+)\\s*(?:\\[(.*?)\\])?\\s*,\\s*(.*?)\\).*?;`,
+      "gim"
+    );
     let match;
     while ((match = regex.exec(this._code)) !== null) {
       const entry: any = {};
@@ -196,7 +204,7 @@ export class Parser {
           entry.is_local = true;
           entry.func_name = fnc.name;
           if (entry.func_name !== funcName) {
-            const msg = `mismatched function name **${entry.func_name}** vs. **${funcName}**`;
+            const msg = `mismatched function name \"${entry.func_name}\" vs. \"${funcName}\"`;
             console.log(msg);
             vscode.window.showWarningMessage(msg);
           }
@@ -235,7 +243,7 @@ export class Parser {
         ) {
           entry.is_local = true;
           entry.func_name = fnc.name;
-          const msg = `found **${entry.name}** in **${entry.func_name}**\n -> use *LOCAL_STATIC_VARIABLE* macro`;
+          const msg = `found \"${entry.name}\" in \"${entry.func_name}\"; use \"${this._jsonData.lsvMacroName}\" macro`;
           console.log(msg);
           vscode.window.showWarningMessage(msg);
         }
@@ -264,8 +272,12 @@ export class Parser {
   }
 }
 
-export function parse(filepath: string, sourcename = ""): any {
-  return Parser.getInstance().parse(filepath, sourcename);
+export function parse(
+  filepath: string,
+  sourcename = "",
+  lsvMacroName = ""
+): any {
+  return Parser.getInstance().parse(filepath, sourcename, lsvMacroName);
 }
 export function generate(
   jsonData: any = {},
@@ -295,9 +307,9 @@ export function generate(
       ...{ sourcedirname: `${sourcedirname}` },
     });
   } catch (error) {
-      const msg = `**${tempPath}**:\n${error}`;
-      console.log(msg);
-      vscode.window.showWarningMessage(msg);
+    const msg = `\"${tempPath}\":\n${error}`;
+    console.log(msg);
+    vscode.window.showWarningMessage(msg);
   }
   console.log(`Generating ${outputFilePath}`);
   if (!fs.existsSync(path.dirname(outputFilePath))) {

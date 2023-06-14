@@ -16,6 +16,10 @@ export function activate(context: vscode.ExtensionContext) {
     () => {
       const config = vscode.workspace.getConfiguration("vscode-cyagen");
       const templates = config.get("templates", []);
+      const lsvMacroName = config.get(
+        "localStaticVariableMacroName",
+        "LOCAL_STATIC_VARIABLE"
+      );
       const filepath = vscode.window.activeTextEditor?.document.uri.fsPath;
       if (filepath && filepath.endsWith(".c")) {
         const extensionPath = context.extensionPath;
@@ -29,7 +33,7 @@ export function activate(context: vscode.ExtensionContext) {
         console.log(`extensionPath=${extensionPath}`);
         const sourceFilename = path.basename(filepath);
         const sourcename = path.basename(filepath, path.extname(filepath));
-        const parser = cyagen.parse(filepath, sourcename);
+        const parser = cyagen.parse(filepath, sourcename, lsvMacroName);
         vscode.window
           .showQuickPick(quickPickItems)
           .then(async (selectedItem) => {
@@ -52,10 +56,9 @@ export function activate(context: vscode.ExtensionContext) {
                 const msg = `${selectedItem.label} script for ${sourceFilename} generated!`;
                 vscode.window.showInformationMessage(msg);
               } else {
-                const msg = `no available template files for ${selectedItem.label}`;
+                const msg = `No available template files for ${selectedItem.label}`;
                 const choice = await vscode.window.showErrorMessage(
                   msg,
-                  { modal: true },
                   "Open Template Folder",
                   "Reveal in Explorer"
                 );
