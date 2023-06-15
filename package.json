@@ -16,16 +16,34 @@
     "email": "robinbreast1412@gamil.com"
   },
   "activationEvents": [
-    "onLanguage:c"
+    "onLanguage:c",
+    "explorer"
   ],
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
       {
         "command": "vscode-cyagen.generate",
-        "title": "Cyagen: generate files using templates"
+        "category": "Cyagen",
+        "group": "cyagen",
+        "title": "generate files using templates"
+      },
+      {
+        "command": "vscode-cyagen.openFolderInWSL",
+        "category": "Cyagen",
+        "group": "cyagen",
+        "title": "Open folder in WSL"
       }
     ],
+    "menus": {
+      "explorer/context": [
+        {
+          "command": "vscode-cyagen.openFolderInWSL",
+          "group": "cyagen",
+          "when": "explorerResourceIsFolder"
+        }
+      ]
+    },
     "languages": [
       {
         "id": "c",

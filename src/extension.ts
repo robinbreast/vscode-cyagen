@@ -11,9 +11,8 @@ export function activate(context: vscode.ExtensionContext) {
   // Use the console to output diagnostic information (console.log) and errors (console.error)
   // This line of code will only be executed once when your extension is activated
   console.log('"vscode-cyagen" is now activating!');
-  let disposable = vscode.commands.registerCommand(
-    "vscode-cyagen.generate",
-    () => {
+  context.subscriptions.push(
+    vscode.commands.registerCommand("vscode-cyagen.generate", () => {
       const config = vscode.workspace.getConfiguration("vscode-cyagen");
       const templates = config.get("templates", []);
       const lsvMacroName = config.get(
@@ -79,9 +78,30 @@ export function activate(context: vscode.ExtensionContext) {
       } else {
         vscode.window.showInformationMessage("no c file found!");
       }
-    }
+    })
   );
-  context.subscriptions.push(disposable);
+  // Register the "extension.openFolderInWSL" command
+  context.subscriptions.push(
+    vscode.commands.registerCommand(
+      "vscode-cyagen.openFolderInWSL",
+      async (uri) => {
+        const { remoteName } = vscode.env;
+        if (remoteName !== undefined && remoteName.length > 0) {
+          console.log(`opening folder ${uri.fsPath}`);
+          await vscode.commands.executeCommand("vscode.openFolder", uri, true);
+        } else {
+          const terminal = vscode.window.createTerminal({
+            shellPath: "wsl.exe",
+          });
+          const cmdstring = `cd \$(wslpath ${uri.fsPath.replace(
+            /\\/g,
+            "\\\\"
+          )}) && code .`;
+          terminal.sendText(cmdstring);
+        }
+      }
+    )
+  );
 }
 
 // This method is called when your extension is deactivated

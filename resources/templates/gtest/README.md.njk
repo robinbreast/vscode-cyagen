@@ -301,6 +301,7 @@ TEST_F(Sample, checkTimeout)
 - adapt CMakeLists.txt by adding missing include path
 
 ## 6. Build test
+- **WARNING** this generated code can be compiled and executed only in Linux or WSL not in Windows since the additional gadget to provide stubbing and wrapping mechanism to test C code using GoogleTest requires flexible linking which is not supported by DLL in Windows.
 - command line
 ```
 $ cmake -S . -B build
@@ -344,16 +345,9 @@ Refer to the [link](https://google.github.io/googletest/quickstart-cmake.html)
 
 ## 9. Code coverage
 1. install `lcov`
-- for Linux or WSL
   ```
   $ sudo apt install lcov
   ```
-- for Windows
-  - install chocolatey according to [link](https://docs.chocolatey.org/en-us/choco/setup#non-administrative-install); you can install choco w/o administrator right but you need admin right later when installing a package
-  - install `lcov` using choco (open PowerShell with admin right)
-    ```
-    $ choco install lcov
-    ```
 2. test coverage report
 - generate report
   ```
