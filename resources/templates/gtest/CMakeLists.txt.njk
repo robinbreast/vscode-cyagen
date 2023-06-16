@@ -1,6 +1,10 @@
 cmake_minimum_required(VERSION 3.14)
 project(test_{{ sourcename }})
 
+if(WIN32)
+  message(FATAL_ERROR "This project does not support Windows.")
+endif()
+
 # GoogleTest requires at least C++14
 set(CMAKE_CXX_STANDARD 14)
 if(POLICY CMP0135)
