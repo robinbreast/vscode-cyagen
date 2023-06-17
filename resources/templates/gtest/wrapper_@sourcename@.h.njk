@@ -120,4 +120,16 @@ void load_real_function(void)
 {{ '}' }}
 }
 
+/// init values
+{%- for var in static_vars %}
+  {%- if var.is_local %}
+const {{ var.dtype }} _init__{{ var.func_name }}_{{ var.name_expr }} = {{ var.init }};
+  {%- else %}
+const {{ var.dtype }} _init_{{ var.name_expr }} = {{ var.init }};
+  {%- endif %}
+{%- endfor %}
+
+#define VARIABLE_INITIALIZE(varname) \
+  memcpy(&(varname), &_init_##varname, sizeof(varname))
+
 #endif //!defined(WRAPPER_{{ sourcename | upper }}_H)

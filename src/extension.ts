@@ -80,27 +80,36 @@ export function activate(context: vscode.ExtensionContext) {
       }
     })
   );
-  // Register the "extension.openFolderInWSL" command
+  // Register the "vscode-cyagen.openFolder" command
   context.subscriptions.push(
-    vscode.commands.registerCommand(
-      "vscode-cyagen.openFolderInWSL",
-      async (uri) => {
-        const { remoteName } = vscode.env;
-        if (remoteName !== undefined && remoteName.length > 0) {
-          console.log(`opening folder ${uri.fsPath}`);
-          await vscode.commands.executeCommand("vscode.openFolder", uri, true);
-        } else {
-          const terminal = vscode.window.createTerminal({
-            shellPath: "wsl.exe",
-          });
-          const cmdstring = `cd \$(wslpath ${uri.fsPath.replace(
-            /\\/g,
-            "\\\\"
-          )}) && code .`;
-          terminal.sendText(cmdstring);
-        }
+    vscode.commands.registerCommand("vscode-cyagen.openFolderInLinux", async (uri) => {
+      const { remoteName } = vscode.env;
+      const os = require("os");
+      if (
+        os.platform() === "linux" ||
+        (remoteName !== undefined && remoteName.length > 0)
+      ) {
+        const msg = `opening folder ${uri.fsPath}`;
+        console.log(msg);
+        vscode.window.showInformationMessage(msg);
+        await vscode.commands.executeCommand("vscode.openFolder", uri, true);
+      } else if (os.platform() === "win32") {
+        const msg = `opening folder ${uri.fsPath} in WSL`;
+        console.log(msg);
+        vscode.window.showInformationMessage(msg);
+        const terminal = vscode.window.createTerminal({
+          shellPath: "wsl.exe",
+        });
+        const cmdstring = `cd \$(wslpath ${uri.fsPath.replace(
+          /\\/g,
+          "\\\\"
+        )}) && code .`;
+        terminal.sendText(cmdstring);
+      } else {
+        const msg = "unexpected request";
+        vscode.window.showErrorMessage(msg);
       }
-    )
+    })
   );
 }
 

@@ -29,16 +29,17 @@
         "title": "generate files using templates"
       },
       {
-        "command": "vscode-cyagen.openFolderInWSL",
+        "command": "vscode-cyagen.openFolderInLinux",
         "category": "Cyagen",
         "group": "cyagen",
-        "title": "Open folder in WSL"
+        "title": "Open folder in Linux",
+        "description": "Open folder in WSL or in Linux"
       }
     ],
     "menus": {
       "explorer/context": [
         {
-          "command": "vscode-cyagen.openFolderInWSL",
+          "command": "vscode-cyagen.openFolderInLinux",
           "group": "cyagen",
           "when": "explorerResourceIsFolder"
         }
