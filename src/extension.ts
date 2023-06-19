@@ -80,20 +80,36 @@ export function activate(context: vscode.ExtensionContext) {
       }
     })
   );
-  // Register the "vscode-cyagen.openFolder" command
   context.subscriptions.push(
-    vscode.commands.registerCommand("vscode-cyagen.openFolderInLinux", async (uri) => {
-      const { remoteName } = vscode.env;
-      const os = require("os");
-      if (
-        os.platform() === "linux" ||
-        (remoteName !== undefined && remoteName.length > 0)
-      ) {
-        const msg = `opening folder ${uri.fsPath}`;
+    vscode.commands.registerCommand(
+      "vscode-cyagen.openTemplateFolder",
+      async (uri) => {
+        const templateFolder = `${context.extensionPath}/resources/templates`;
+        const templateUri = vscode.Uri.file(templateFolder);
+        const msg = `opening folder ${templateUri.fsPath}`;
         console.log(msg);
         vscode.window.showInformationMessage(msg);
-        await vscode.commands.executeCommand("vscode.openFolder", uri, true);
-      } else if (os.platform() === "win32") {
+        await vscode.commands.executeCommand(
+          "vscode.openFolder",
+          templateUri,
+          true
+        );
+      }
+    )
+  );
+  context.subscriptions.push(
+    vscode.commands.registerCommand("vscode-cyagen.openFolder", async (uri) => {
+      const msg = `opening folder ${uri.fsPath}`;
+      console.log(msg);
+      vscode.window.showInformationMessage(msg);
+      await vscode.commands.executeCommand("vscode.openFolder", uri, true);
+    })
+  );
+  // Register the "vscode-cyagen.openFolderInWSL" command
+  context.subscriptions.push(
+    vscode.commands.registerCommand(
+      "vscode-cyagen.openFolderInWSL",
+      async (uri) => {
         const msg = `opening folder ${uri.fsPath} in WSL`;
         console.log(msg);
         vscode.window.showInformationMessage(msg);
@@ -105,11 +121,8 @@ export function activate(context: vscode.ExtensionContext) {
           "\\\\"
         )}) && code .`;
         terminal.sendText(cmdstring);
-      } else {
-        const msg = "unexpected request";
-        vscode.window.showErrorMessage(msg);
       }
-    })
+    )
   );
 }
 

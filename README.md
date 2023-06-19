@@ -9,7 +9,7 @@ File generator to reduce the manual efforts to prepare another scripting files w
 - Generate text based files using the given template files
 - Supported identifiers are inclusion, local variables, and functions; refer to [cyagen](https://crates.io/crates/cyagen)
 - Demo: generate the Google Test skeleton files to test an open C file
-![Demo](./resources/images/vscode-cyagen-demo.gif)
+![Demo](resources/images/vscode-cyagen-demo.gif)
 
 > Tip: The default template for Google Test provides the full fledged cmake build scripts as well but this cmake project is compatible only with Unix-like system.
 
