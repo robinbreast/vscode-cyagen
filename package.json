@@ -113,6 +113,6 @@
   ],
   "repository": {
     "type": "git",
-    "uri": "https://github.com/robinbreast/vscode-cyagen"
+    "uri": "https://github.com/robinbreast/vscode-cyagen.git"
   }
 }

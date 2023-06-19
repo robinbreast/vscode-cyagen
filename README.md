@@ -9,7 +9,7 @@ File generator to reduce the manual efforts to prepare another scripting files w
 - Generate text based files using the given template files
 - Supported identifiers are inclusion, local variables, and functions
 
-![Demo](https://github.com/robinbreast/vscode-cyagen/blob/main/resources/images/vscode-cyagen-demo.gif)
+![Demo](resources/images/vscode-cyagen-demo.gif)
 
 For example if there is an image subfolder under your extension project workspace:
 
