@@ -3,9 +3,15 @@
   "displayName": "vscode-cyagen",
   "description": "",
   "version": "0.0.3",
-  "engines": {
-    "vscode": "^1.64.0"
-  },
+  "keywords": [
+    "c",
+    "cyagen",
+    "generate",
+    "generator",
+    "template",
+    "googletest",
+    "gtest"
+  ],
   "categories": [
     "Other"
   ],
@@ -15,11 +21,18 @@
     "name": "Kihoa Nam",
     "email": "robinbreast1412@gamil.com"
   },
+  "repository": {
+    "type": "git",
+    "uri": "https://github.com/robinbreast/vscode-cyagen.git"
+  },
+  "bugs": {
+    "url": "https://github.com/robinbreast/vscode-cyagen/issues"
+  },
+  "icon": "resources/images/cyagen.png",
   "activationEvents": [
     "onLanguage:c",
     "explorer"
   ],
-  "main": "./out/extension.js",
   "contributes": {
     "commands": [
       {
@@ -80,6 +93,10 @@
       }
     }
   },
+  "engines": {
+    "vscode": "^1.64.0"
+  },
+  "main": "./out/extension.js",
   "scripts": {
     "vscode:prepublish": "npm run compile",
     "compile": "tsc -p ./",
@@ -107,12 +124,5 @@
     "crypto": "^1.0.1",
     "nunjucks": "^3.2.4",
     "uuid": "^9.0.0"
-  },
-  "files": [
-    "resources/templates/gtest/*.njk"
-  ],
-  "repository": {
-    "type": "git",
-    "uri": "https://github.com/robinbreast/vscode-cyagen.git"
   }
 }
