@@ -1,75 +1,36 @@
 # vscode-cyagen README
 
-vscode-cyagen is based on the same idea as [cyagen](https://crates.io/crates/cyagen) but realizedd as a vscode extension.
+vscode-cyagen is based on the same idea as [cyagen](https://crates.io/crates/cyagen) but realized as a vscode extension.
 
 ## Features
 
-File generator to reduce the manual efforts to prepare another scripting files which contains C code information derived by a C source file.
+File generator to reduce the manual efforts to prepare another scripting files which contains C code identifiers from a given C source file.
 - Scan C source file using the simple pattern matching to capture the identifiers in the code
 - Generate text based files using the given template files
-- Supported identifiers are inclusion, local variables, and functions
+- Supported identifiers are inclusion, local variables, and functions; refer to [cyagen](https://crates.io/crates/cyagen)
+- Demo: generate the Google Test skeleton files to test an open C file
+![Demo](./resources/images/vscode-cyagen-demo.gif)
 
-![Demo](resources/images/vscode-cyagen-demo.gif)
+> Tip: The default template for Google Test provides the full fledged cmake build scripts as well but this cmake project is compatible only with Unix-like system.
 
-For example if there is an image subfolder under your extension project workspace:
-
-\!\[feature X\]\(images/feature-x.png\)
-
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
-
-## Requirements
-
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+> Tip: you can prepare your own set of template files by adding additional set into `vscode-cyagen.templates` in Settings
 
 ## Extension Settings
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
-
-For example:
-
 This extension contributes the following settings:
 
-* `vscode-cyagen.enable`: Enable/disable this extension.
-* `vscode-cyagen.thing`: Set to `blah` to do something.
+* `vscode-cyagen.templates`: array of template set; every set has to have the below settings
+	* `label`: the name or label for this set; to be displayed as a selection option when trying to generate. e.g., `gtest` or `cantata`; this extension doesn't include the set of template files for `cantata` but you can complete by referring to `gtest` ones.
+	* `templateFolder`: template folders containing template files to be used for file generation. the template should be compatible with `nunjucks` format.
+	* `outputFolder`: output folder where all the generated files are placed.
+* `vscode-cyagen.localStaticVariableMacroName`: user defined macro name string which is used for the definition of a local static variable. e.g., LOCAL_STATIC_VARIABLE. Using this special macro, it makes test script access to local static variable. more details are found in `README.md` generated with `gtest`
 
 ## Known Issues
 
-Calling out known issues can help limit users opening duplicate issues against your extension.
+No known issues yet
 
 ## Release Notes
 
-Users appreciate release notes as you update your extension.
+### 0.1.0
 
-### 1.0.0
-
-Initial release of ...
-
-### 1.0.1
-
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
-
----
-
-## Following extension guidelines
-
-Ensure that you've read through the extensions guidelines and follow the best practices for creating your extension.
-
-* [Extension Guidelines](https://code.visualstudio.com/api/references/extension-guidelines)
-
-## Working with Markdown
-
-You can author your README using Visual Studio Code. Here are some useful editor keyboard shortcuts:
-
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux).
-* Toggle preview (`Shift+Cmd+V` on macOS or `Shift+Ctrl+V` on Windows and Linux).
-* Press `Ctrl+Space` (Windows, Linux, macOS) to see a list of Markdown snippets.
-
-## For more information
-
-* [repository](https://github.com/robinbreast/vscode-cyagen)
-
-**Enjoy!**
+Initial release

@@ -4,4 +4,4 @@ node_modules
 .vscode-test
 *.vsix
 generated
-resources/templates/cantata/*
+resources/templates/cantata*
