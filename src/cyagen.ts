@@ -152,7 +152,7 @@ export class Parser {
       }
       var args = match.groups?.args;
       if (args) {
-        args = args.trim();
+        args = args.replace(/\\/g, "").trim();
         if (args === "void" || args === "") {
           entry.args = "";
           entry.atypes = "";
