@@ -1,4 +1,4 @@
-# vscode-cyagen README
+# vscode-cyagen
 
 vscode-cyagen is based on the same idea as [cyagen](https://crates.io/crates/cyagen) but realized as a vscode extension.
 
