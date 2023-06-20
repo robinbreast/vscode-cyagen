@@ -99,10 +99,19 @@ export function activate(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(
     vscode.commands.registerCommand("vscode-cyagen.openFolder", async (uri) => {
-      const msg = `opening folder ${uri.fsPath}`;
-      console.log(msg);
-      vscode.window.showInformationMessage(msg);
-      await vscode.commands.executeCommand("vscode.openFolder", uri, true);
+      if (uri === undefined) {
+        uri = await getFolderUri();
+      }
+      if (uri !== undefined) {
+        const msg = `opening folder ${uri.fsPath}`;
+        console.log(msg);
+        vscode.window.showInformationMessage(msg);
+        await vscode.commands.executeCommand("vscode.openFolder", uri, true);
+      } else {
+        const msg = `undefined folder uri to open`;
+        console.log(msg);
+        vscode.window.showErrorMessage(msg);
+      }
     })
   );
   // Register the "vscode-cyagen.openFolderInWSL" command
@@ -110,17 +119,26 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand(
       "vscode-cyagen.openFolderInWSL",
       async (uri) => {
-        const msg = `opening folder ${uri.fsPath} in WSL`;
-        console.log(msg);
-        vscode.window.showInformationMessage(msg);
-        const terminal = vscode.window.createTerminal({
-          shellPath: "wsl.exe",
-        });
-        const cmdstring = `cd \$(wslpath ${uri.fsPath.replace(
-          /\\/g,
-          "\\\\"
-        )}) && code .`;
-        terminal.sendText(cmdstring);
+        if (uri === undefined) {
+          uri = await getFolderUri();
+        }
+        if (uri !== undefined) {
+          const msg = `opening folder ${uri.fsPath} in WSL`;
+          console.log(msg);
+          vscode.window.showInformationMessage(msg);
+          const terminal = vscode.window.createTerminal({
+            shellPath: "wsl.exe",
+          });
+          const cmdstring = `cd \$(wslpath ${uri.fsPath.replace(
+            /\\/g,
+            "\\\\"
+          )}) && code .`;
+          terminal.sendText(cmdstring);
+        } else {
+          const msg = `undefined folder uri to open`;
+          console.log(msg);
+          vscode.window.showErrorMessage(msg);
+        }
       }
     )
   );
@@ -128,6 +146,20 @@ export function activate(context: vscode.ExtensionContext) {
 
 // This method is called when your extension is deactivated
 export function deactivate() {}
+
+async function getFolderUri(): Promise<any> {
+  const options: vscode.OpenDialogOptions = {
+    canSelectMany: false,
+    canSelectFiles: false,
+    canSelectFolders: true,
+    openLabel: "Open",
+  };
+  const selectedUri: any = await vscode.window.showOpenDialog(options);
+  if (selectedUri && selectedUri[0]) {
+    return selectedUri[0];
+  }
+  return undefined;
+}
 
 function generateFiles(jsonData: any, tempDir: string, outputDir: string) {
   fs.readdir(tempDir, (err: any, files: any) => {
