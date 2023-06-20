@@ -9,3 +9,5 @@ vsc-extension-quickstart.md
 **/*.map
 **/*.ts
 node_modules
+resources/images/**
+!resources/images/cyagen.png
