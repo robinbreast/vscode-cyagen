@@ -2,7 +2,7 @@
   "name": "vscode-cyagen",
   "displayName": "vscode-cyagen",
   "description": "",
-  "version": "0.0.4",
+  "version": "0.1.0",
   "keywords": [
     "c",
     "cyagen",
@@ -13,6 +13,8 @@
     "gtest"
   ],
   "categories": [
+    "Programming Languages",
+    "Testing",
     "Other"
   ],
   "publisher": "robinbreast",
