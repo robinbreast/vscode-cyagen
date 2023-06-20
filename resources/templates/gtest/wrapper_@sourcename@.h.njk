@@ -90,11 +90,11 @@ int stubExample(int arg)
 {%- for ncl in ncls -%}
   {%- if fnc.name == ncl.callee.name -%}
     {%- if fnc.name not in callees %}
-{{ fnc.captured }}
+{{ fnc.captured | safe }}
   LOG_WRAP("before");
   // MANUAL SECTION: {{ generateUUID(fnc.name ~ "wrapper-before") }}
   // MANUAL SECTION END
-  {% if fnc.rtype != 'void' %}return {% endif %}CALL_MOCK_FUNCTION({{ fnc.name }}{% if fnc.anames is defined and args != '' %}, {{ fnc.anames }}{% else %}{% endif %});
+  {% if fnc.rtype != 'void' %}return {% endif %}CALL_MOCK_FUNCTION({{ fnc.name }}{% if fnc.anames is defined and fnc.anames != '' %}, {{ fnc.anames }}{% else %}{% endif %});
   LOG_WRAP("after");
   // MANUAL SECTION: {{ generateUUID(fnc.name ~ "wrapper-after") }}
   // MANUAL SECTION END

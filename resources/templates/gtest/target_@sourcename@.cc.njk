@@ -37,7 +37,10 @@ extern "C"
 #endif //defined(STATIC)
 
 #define inline
-#define INLINE
+#if defined(INLINE)
+# undef INLINE
+# define INLINE
+#endif //defined(INLINE)
 #define static
 
 /// include SUT
