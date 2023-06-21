@@ -32,6 +32,8 @@ protected:
 /// define a test case for the {{ fnc.name }}() function
 TEST_F({{ sourcename | capitalize }}, {{ fnc.name }})
 {
+  Mock mock;
+  ::testing::Sequence seq;
   // MANUAL SECTION: {{ generateUUID(fnc.name) }}
   // MANUAL SECTION END
 }

@@ -42,10 +42,9 @@ add_executable(test_{{ sourcename }}
 set_target_properties(test_{{ sourcename }} PROPERTIES LINK_FLAGS
   "-Wl,-rpath='$ORIGIN'")
 target_link_libraries(test_{{ sourcename }}
+  target
   GTest::gtest_main
   GTest::gmock_main
-  dl
-  target
 # MANUAL SECTION: {{ generateUUID(sourcename ~ "cmake-linklibs") }}
 # MANUAL SECTION END
 )

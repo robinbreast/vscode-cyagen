@@ -9,6 +9,10 @@ extern "C"
 {{ inc.captured | safe }}
 {%- endif %}
 {%- endfor %}
+
+/// dummy variable for dynamic linking between libtarget.so and test_{{ sourcename }} executable
+extern int _{{ sourcename }}_dummyVar;
+
 // MANUAL SECTION: {{ generateUUID(sourcename ~ "extern") }}
 // MANUAL SECTION END
 }

@@ -19,6 +19,8 @@ public:
   static auto &getInstance()
   {
     static MockBroker mb;
+    /// dummy variable for dynamic linking between libtarget.so and test_{{ sourcename }} executable
+    _{{ sourcename }}_dummyVar = 1;
     return mb;
   }
   void set(Mock *mock)
@@ -90,14 +92,16 @@ int stubExample(int arg)
 {%- for ncl in ncls -%}
   {%- if fnc.name == ncl.callee.name -%}
     {%- if fnc.name not in callees %}
-{{ fnc.captured | safe }}
+{{ fnc.rtype }} {{ fnc.name }}({{ fnc.args }})
+{{ '{' }}
   LOG_WRAP("before");
   // MANUAL SECTION: {{ generateUUID(fnc.name ~ "wrapper-before") }}
   // MANUAL SECTION END
-  {% if fnc.rtype != 'void' %}return {% endif %}CALL_MOCK_FUNCTION({{ fnc.name }}{% if fnc.anames is defined and fnc.anames != '' %}, {{ fnc.anames }}{% else %}{% endif %});
+  {% if fnc.rtype != 'void' %}const {{ fnc.rtype }} result = {% endif %}CALL_MOCK_FUNCTION({{ fnc.name }}{% if fnc.anames is defined and fnc.anames != '' %}, {{ fnc.anames }}{% else %}{% endif %});
   LOG_WRAP("after");
   // MANUAL SECTION: {{ generateUUID(fnc.name ~ "wrapper-after") }}
   // MANUAL SECTION END
+  return{% if fnc.rtype != 'void' %} result{% endif %};
 {{ '}' }}
       {%- set _ = callees.push(fnc.name) -%}
     {%- endif -%}

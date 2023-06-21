@@ -23,7 +23,7 @@ extern "C"
 /// invalidate all the static visibility before including target source
 #if defined(LOCAL_INLINE)
 # undef LOCAL_INLINE
-# define LOCAL_INLINE __attribut__((visibility("default")))
+# define LOCAL_INLINE __attribute__((visibility("default")))
 #endif //defined(LOCAL_INLINE)
 
 #if defined(LOCAL)
@@ -45,5 +45,8 @@ extern "C"
 
 /// include SUT
 #include "{{ sourcename }}.c"
+
+/// dummy variable for dynamic linking between libtarget.so and test_{{ sourcename }} executable
+int _{{ sourcename }}_dummyVar = 0;
 
 }
