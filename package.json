@@ -2,7 +2,7 @@
   "name": "vscode-cyagen",
   "displayName": "vscode-cyagen",
   "description": "",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "keywords": [
     "c",
     "cyagen",
@@ -43,13 +43,19 @@
         "command": "vscode-cyagen.generate",
         "category": "Cyagen",
         "group": "cyagen",
-        "title": "generate files using templates"
+        "title": "Generate files using templates"
       },
       {
         "command": "vscode-cyagen.openTemplateFolder",
         "category": "Cyagen",
         "group": "cyagen",
         "title": "Open template folder"
+      },
+      {
+        "command": "vscode-cyagen.revealTemplateFolder",
+        "category": "Cyagen",
+        "group": "cyagen",
+        "title": "Reveal template folder in explorer"
       },
       {
         "command": "vscode-cyagen.openFolder",
@@ -120,7 +126,7 @@
   "main": "./out/main.js",
   "scripts": {
     "vscode:prepublish": "npm run esbuild-base -- --minify",
-    "esbuild-base": "esbuild ./src/extension.ts --bundle --outfile=out/main.js --external:vscode --format=cjs --platform=node",
+    "esbuild-base": "esbuild ./src/extension.ts --bundle --outfile=out/main.js --external:vscode --format=cjs --platform=node --target=es2020",
     "esbuild": "npm run esbuild-base -- --sourcemap",
     "esbuild-watch": "npm run esbuild-base -- --sourcemap --watch",
     "test-compile": "tsc -p ./",

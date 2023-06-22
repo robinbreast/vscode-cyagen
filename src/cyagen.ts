@@ -111,7 +111,7 @@ export class Parser {
   }
   private getTypedefs() {
     const list: {}[] = [];
-    const regex = /^(typedef\s+[.\s\S]+?);/gm;
+    const regex = /^(typedef\s+(?:.*?{[.\s\S]*?}.*?;|[.\s\S]+?;))/gm;
     let match;
     while ((match = regex.exec(this._code)) !== null) {
       const entry: any = {};

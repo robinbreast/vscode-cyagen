@@ -64,7 +64,7 @@ export function activate(context: vscode.ExtensionContext) {
                 if (choice === "Open Template Folder") {
                   vscode.commands.executeCommand(
                     "vscode.openFolder",
-                    vscode.Uri.file(path.dirname(templateFolder))
+                    vscode.Uri.file(path.dirname(templateFolder)), true
                   );
                 } else if (choice === "Reveal in Explorer") {
                   vscode.commands.executeCommand(
@@ -93,6 +93,22 @@ export function activate(context: vscode.ExtensionContext) {
           "vscode.openFolder",
           templateUri,
           true
+        );
+      }
+    )
+  );
+  context.subscriptions.push(
+    vscode.commands.registerCommand(
+      "vscode-cyagen.revealTemplateFolder",
+      async (uri) => {
+        const templateFolder = `${context.extensionPath}/resources/templates`;
+        const templateUri = vscode.Uri.file(templateFolder);
+        const msg = `reveal folder ${templateUri.fsPath}`;
+        console.log(msg);
+        vscode.window.showInformationMessage(msg);
+        await vscode.commands.executeCommand(
+          "revealFileInOS",
+          templateUri
         );
       }
     )
