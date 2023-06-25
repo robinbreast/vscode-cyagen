@@ -4,7 +4,7 @@
 
 ## Features
 
-File generator to reduce the manual efforts to prepare another scripting files which contains C code identifiers from a given C source file.
+File generator to reduce the manual efforts to prepare another scripting files which contains C code identifiers from a given C source file. The default embedded templates are to generate [GoogleTest](https://google.github.io/googletest/) scripts.
 
 - Scan C source file using the simple pattern matching to capture its identifiers in the code
 - Generate text based files by rendering the given set of template files (`*.njk`, in `nunjucks` format).
@@ -35,6 +35,12 @@ No known issues yet
 
 ## Release Notes
 
+## [0.1.2]
+- new command: `vscode-cyagen.openTargetSource`
+- new configuration: `vscode-cyagen.currentTargetSource`
+## [0.1.1]
+- add reveal template folder command
+- open template folder `with new instance`
+- fix wrong capture with the pattern `typedef struct {}`
 ### 0.1.0
-
 Initial release

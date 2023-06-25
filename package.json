@@ -2,7 +2,7 @@
   "name": "vscode-cyagen",
   "displayName": "vscode-cyagen",
   "description": "",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "keywords": [
     "c",
     "cyagen",
@@ -44,6 +44,12 @@
         "category": "Cyagen",
         "group": "cyagen",
         "title": "Generate files using templates"
+      },
+      {
+        "command": "vscode-cyagen.openTargetSource",
+        "category": "Cyagen",
+        "group": "cyagen",
+        "title": "Open target source file"
       },
       {
         "command": "vscode-cyagen.openTemplateFolder",
@@ -116,6 +122,10 @@
             }
           ],
           "description": "templates to render the identifiers in the current C file"
+        },
+        "vscode-cyagen.currentTargetSource": {
+          "type": "string",
+          "description": "the current target source file path"
         }
       }
     }

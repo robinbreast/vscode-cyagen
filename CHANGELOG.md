@@ -1,5 +1,8 @@
 # Change Log
 
+## [0.1.2]
+- new command: `vscode-cyagen.openTargetSource`
+- new configuration: `vscode-cyagen.currentTargetSource`
 ## [0.1.1]
 - add reveal template folder command
 - open template folder `with new instance`

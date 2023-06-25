@@ -64,7 +64,8 @@ export function activate(context: vscode.ExtensionContext) {
                 if (choice === "Open Template Folder") {
                   vscode.commands.executeCommand(
                     "vscode.openFolder",
-                    vscode.Uri.file(path.dirname(templateFolder)), true
+                    vscode.Uri.file(path.dirname(templateFolder)),
+                    true
                   );
                 } else if (choice === "Reveal in Explorer") {
                   vscode.commands.executeCommand(
@@ -79,6 +80,48 @@ export function activate(context: vscode.ExtensionContext) {
         vscode.window.showInformationMessage("no c file found!");
       }
     })
+  );
+  context.subscriptions.push(
+    vscode.commands.registerCommand(
+      "vscode-cyagen.openTargetSource",
+      async () => {
+        let targetSource = undefined;
+        const config = vscode.workspace.getConfiguration("vscode-cyagen");
+        const configTargetSource = config.get("currentTargetSource", undefined);
+        const workspaceFolders = vscode.workspace.workspaceFolders;
+        if (
+          workspaceFolders !== undefined &&
+          configTargetSource !== undefined
+        ) {
+          targetSource = vscode.Uri.joinPath(
+            workspaceFolders[0].uri,
+            configTargetSource
+          );
+        }
+        if (targetSource === undefined) {
+          const options: vscode.OpenDialogOptions = {
+            canSelectMany: false,
+            canSelectFiles: true,
+            canSelectFolders: false,
+            openLabel: "Open",
+          };
+          const selectedUri: any = await vscode.window.showOpenDialog(options);
+          if (selectedUri && selectedUri[0]) {
+            targetSource = selectedUri[0];
+          }
+        }
+        console.log(`[cyagen] targetSource = ${targetSource}`);
+        if (targetSource !== undefined) {
+          vscode.workspace.openTextDocument(targetSource).then((document) => {
+            vscode.window.showTextDocument(document);
+          });
+        } else {
+          const msg = `undefined file uri to open`;
+          console.log(msg);
+          vscode.window.showErrorMessage(msg);
+        }
+      }
+    )
   );
   context.subscriptions.push(
     vscode.commands.registerCommand(
@@ -100,24 +143,19 @@ export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.commands.registerCommand(
       "vscode-cyagen.revealTemplateFolder",
-      async (uri) => {
+      async () => {
         const templateFolder = `${context.extensionPath}/resources/templates`;
         const templateUri = vscode.Uri.file(templateFolder);
         const msg = `reveal folder ${templateUri.fsPath}`;
         console.log(msg);
         vscode.window.showInformationMessage(msg);
-        await vscode.commands.executeCommand(
-          "revealFileInOS",
-          templateUri
-        );
+        await vscode.commands.executeCommand("revealFileInOS", templateUri);
       }
     )
   );
   context.subscriptions.push(
     vscode.commands.registerCommand("vscode-cyagen.openFolder", async (uri) => {
-      if (uri === undefined) {
-        uri = await getFolderUri();
-      }
+      uri = await getFolderUri(uri);
       if (uri !== undefined) {
         const msg = `opening folder ${uri.fsPath}`;
         console.log(msg);
@@ -135,9 +173,7 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand(
       "vscode-cyagen.openFolderInWSL",
       async (uri) => {
-        if (uri === undefined) {
-          uri = await getFolderUri();
-        }
+        uri = await getFolderUri(uri);
         if (uri !== undefined) {
           const msg = `opening folder ${uri.fsPath} in WSL`;
           console.log(msg);
@@ -145,10 +181,10 @@ export function activate(context: vscode.ExtensionContext) {
           const terminal = vscode.window.createTerminal({
             shellPath: "wsl.exe",
           });
-          const cmdstring = `cd \$(wslpath ${uri.fsPath.replace(
+          const cmdstring = `code \$(wslpath ${uri.fsPath.replace(
             /\\/g,
             "\\\\"
-          )}) && code .`;
+          )})`;
           terminal.sendText(cmdstring);
         } else {
           const msg = `undefined folder uri to open`;
@@ -163,18 +199,34 @@ export function activate(context: vscode.ExtensionContext) {
 // This method is called when your extension is deactivated
 export function deactivate() {}
 
-async function getFolderUri(): Promise<any> {
-  const options: vscode.OpenDialogOptions = {
-    canSelectMany: false,
-    canSelectFiles: false,
-    canSelectFolders: true,
-    openLabel: "Open",
-  };
-  const selectedUri: any = await vscode.window.showOpenDialog(options);
-  if (selectedUri && selectedUri[0]) {
-    return selectedUri[0];
+async function getFolderUri(
+  uri: vscode.Uri | undefined
+): Promise<vscode.Uri | undefined> {
+  let result = uri;
+  if (uri === undefined) {
+    const options: vscode.OpenDialogOptions = {
+      canSelectMany: false,
+      canSelectFiles: false,
+      canSelectFolders: true,
+      openLabel: "Open",
+    };
+    const selectedUri: any = await vscode.window.showOpenDialog(options);
+    if (selectedUri && selectedUri[0]) {
+      result = selectedUri[0];
+    }
   }
-  return undefined;
+  if (uri !== undefined) {
+    const files = fs.readdirSync(uri.fsPath);
+    const workspaceFiles = files.filter(
+      (file) => path.extname(file) === ".code-workspace"
+    );
+
+    if (workspaceFiles.length > 0) {
+      const workspaceFilePath = path.join(uri.fsPath, workspaceFiles[0]);
+      result = vscode.Uri.file(workspaceFilePath);
+    }
+  }
+  return result;
 }
 
 function generateFiles(jsonData: any, tempDir: string, outputDir: string) {
