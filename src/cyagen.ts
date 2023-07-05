@@ -54,7 +54,7 @@ export class Parser {
     let firstPos = true;
     const argList = args.split(",");
     argList.forEach((arg) => {
-      const regex = /^(.*?)(\w+)$/;
+      const regex = /^(.*?)(\w+(?:\[.*?\])*)$/;
       let match = arg.match(regex);
       let atype = "";
       let aname = "";
@@ -74,6 +74,13 @@ export class Parser {
           anames += ", ";
         }
         atypes += atype;
+        // add '*' by the occurrence of '[]' in name
+        atypes += '*'.repeat(atype.split('').filter(c => c === '[').length);
+        // remove '[]' from aname
+        const re4bracket = /(\[.*?\])+/;
+        if (re4bracket.test(aname)) {
+          aname = aname.replace(re4bracket, "");
+        }
         anames += aname;
       }
     });
