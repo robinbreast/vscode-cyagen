@@ -1,5 +1,8 @@
 # Change Log
 
+## [0.1.4]
+- update modules for vulnerabilities
+
 ## [0.1.3]
 - fix error in parsing argument list with array pattern like 'int arg[]'
 ## [0.1.2]
