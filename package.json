@@ -112,8 +112,8 @@
           "type": "array",
           "default": [
             {
-              "label": "gtest",
-              "templateFolder": "${extensionPath}/resources/templates/gtest",
+              "label": "gtest.basic",
+              "templateFolder": "${extensionPath}/resources/templates/gtest.basic",
               "outputFolder": "${fileDirname}/../tst/gtest/test_{{sourcename}}"
             },
             {

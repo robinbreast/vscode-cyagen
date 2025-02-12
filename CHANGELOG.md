@@ -4,6 +4,7 @@
 - allow header files and C++ files as source file but to render with minimum dictionary data
 - supports .j2 extension for template files
 - `uuid` is not used anymore for manual sections
+- `@` is not used anymore in template file or folder name; instead `{{` and `}}` like jinja2 syntax
 ## [0.1.4]
 - update modules for vulnerabilities
 ## [0.1.3]

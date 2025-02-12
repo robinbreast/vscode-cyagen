@@ -5,6 +5,7 @@ import * as path from "path";
 import * as fs from "fs";
 import * as cyagen from "./cyagen";
 import { getSourceDirname, renderString } from "./utils";
+import { json } from "stream/consumers";
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
@@ -36,6 +37,7 @@ export function activate(context: vscode.ExtensionContext) {
         const sourcedirname = getSourceDirname(fileDirname, filepath);
         let jsonData: any = {
           sourceFilePath: filepath,
+          sourceFileName: sourceFilename,
           sourcename: sourcename,
           sourcedirname: sourcedirname,
         };
@@ -61,7 +63,13 @@ export function activate(context: vscode.ExtensionContext) {
                 fs.statSync(templateFolder).isDirectory() &&
                 fs.readdirSync(templateFolder).length > 0
               ) {
-                generateFiles(jsonData, templateFolder, renderString(outputFolder, jsonData));
+                const renderedOutputFolder = renderString(outputFolder, jsonData);
+                const sutLinkPath = path.join(renderedOutputFolder, "sut", sourceFilename);
+                if (!fs.existsSync(path.dirname(sutLinkPath))) {
+                  fs.mkdirSync(path.dirname(sutLinkPath), { recursive: true });
+                }
+                fs.symlinkSync(filepath, sutLinkPath, "file");
+                generateFiles(jsonData, templateFolder, renderedOutputFolder);
                 const msg = `${selectedItem.label} script for ${sourceFilename} generated!`;
                 vscode.window.showInformationMessage(msg);
               } else {

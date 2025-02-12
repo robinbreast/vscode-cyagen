@@ -25,7 +25,7 @@ This extension contributes the following settings:
   - `templateFolder`: the template folders containing template files to be used for file generation.
     - All the template files should be compatible with [nunjucks](https://mozilla.github.io/nunjucks/templating.html) format and `.njk` file extension.
     - The template folder can be recursive; you can have sub folders for further template files; the same structure of folders to be created as output.
-    - `@sourcename@` in template file or folder name: to be replaced with source file name without file extension 
+    - `{{sourcename}}` in template file or folder name: to be replaced with source file name without file extension 
   - `outputFolder`: the output root folder where the generated files are placed.
 - `vscode-cyagen.localStaticVariableMacroName`: the user defined macro name string which is used for the definition of a local static variable. e.g., LOCAL_STATIC_VARIABLE. Using this special macro, it makes test script access to local static variable. more details are found in `README.md` generated with `gtest`
 
@@ -39,6 +39,7 @@ No known issues yet
 - allow header files and C++ files as source file but to render with minimum dictionary data
 - supports .j2 extension for template files
 - `uuid` is not used anymore for manual sections
+- `@` is not used anymore in template file or folder name; instead `{{` and `}}` like jinja2 syntax
 ## [0.1.4]
 - update modules for vulnerabilities
 ## [0.1.3]

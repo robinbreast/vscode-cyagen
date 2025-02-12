@@ -20,6 +20,7 @@ export class Parser {
     const fs = require("fs");
     this._code = fs.readFileSync(sourceFilePath, "utf-8");
     this._jsonData.sourceFilePath = sourceFilePath;
+    this._jsonData.sourceFileName = path.basename(sourceFilePath);
     if (sourcename === "") {
       const path = require("path");
       this._jsonData.sourcename = path.basename(
