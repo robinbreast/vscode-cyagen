@@ -35,6 +35,7 @@ export function activate(context: vscode.ExtensionContext) {
         const sourcename = path.basename(filepath, path.extname(filepath));
         const sourcedirname = getSourceDirname(fileDirname, filepath);
         let jsonData: any = {
+          sourceFilePath: filepath,
           sourcename: sourcename,
           sourcedirname: sourcedirname,
         };
@@ -60,7 +61,7 @@ export function activate(context: vscode.ExtensionContext) {
                 fs.statSync(templateFolder).isDirectory() &&
                 fs.readdirSync(templateFolder).length > 0
               ) {
-                generateFiles(jsonData, templateFolder, outputFolder);
+                generateFiles(jsonData, templateFolder, renderString(outputFolder, jsonData));
                 const msg = `${selectedItem.label} script for ${sourceFilename} generated!`;
                 vscode.window.showInformationMessage(msg);
               } else {
@@ -253,19 +254,16 @@ function generateFiles(jsonData: any, tempDir: string, outputDir: string) {
           return;
         }
         const renderedFileName = renderString(file, jsonData);
+        const outputFilePath = path.join(outputDir, renderedFileName);
         if (stats.isDirectory()) {
-          generateFiles(
-            jsonData,
-            filePath,
-            path.join(outputDir, renderedFileName)
-          );
+          generateFiles(jsonData, filePath, outputFilePath);
         } else if (stats.isFile()) {
-          const ext = path.extname(filePath);
-          if (ext === ".njk" || ext === ".j2") {
-            const outputFilePath = path.join(outputDir, renderedFileName.replace(/\.(njk|j2)$/, ""));
-            cyagen.generate(jsonData, filePath, outputFilePath);
+          if (!fs.existsSync(outputDir)) {
+            fs.mkdirSync(outputDir, { recursive: true });
+          }
+          if (filePath.endsWith(".njk") || filePath.endsWith(".j2")) {
+            cyagen.generate(jsonData, filePath, outputFilePath.replace(/\.(njk|j2)$/, ""));
           } else {
-            const outputFilePath = path.join(outputDir, renderedFileName);
             fs.copyFileSync(filePath, outputFilePath);
           }
         }

@@ -8,8 +8,5 @@ vsc-extension-quickstart.md
 **/.eslintrc.json
 **/*.map
 **/*.ts
-out/**
-!out/main.js
-node_modules
 resources/images/**
 !resources/images/cyagen.png

@@ -139,10 +139,10 @@
   "engines": {
     "vscode": "^1.64.0"
   },
-  "main": "./out/main.js",
+  "main": "./out/extension.js",
   "scripts": {
     "vscode:prepublish": "npm run esbuild-base -- --minify",
-    "esbuild-base": "esbuild ./src/extension.ts --bundle --outfile=out/main.js --external:vscode --format=cjs --platform=node --target=es2020",
+    "esbuild-base": "esbuild ./src/extension.ts --bundle --outfile=out/extension.js --external:vscode --format=cjs --platform=node --target=es2020",
     "esbuild": "npm run esbuild-base -- --sourcemap",
     "esbuild-watch": "npm run esbuild-base -- --sourcemap --watch",
     "test-compile": "tsc -p ./",
@@ -167,7 +167,6 @@
     "typescript": "^5.0.4"
   },
   "dependencies": {
-    "nunjucks": "^3.2.4",
-    "uuid": "^9.0.0"
+    "nunjucks": "^3.2.4"
   }
 }

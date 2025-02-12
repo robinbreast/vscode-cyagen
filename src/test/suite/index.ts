@@ -1,6 +1,7 @@
 import * as path from 'path';
-import * as Mocha from 'mocha';
-import * as glob from 'glob';
+import Mocha from 'mocha';
+import { glob } from 'glob';
+import * as fs from 'fs';
 
 export function run(): Promise<void> {
 	// Create the mocha test
@@ -23,8 +24,10 @@ export function run(): Promise<void> {
 			try {
 				// Run the mocha test
 				mocha.run(failures => {
+					const result = `${failures} tests failed.`;
+					fs.writeFileSync(path.resolve(testsRoot, 'test-results.log'), result);
 					if (failures > 0) {
-						e(new Error(`${failures} tests failed.`));
+						e(new Error(result));
 					} else {
 						c();
 					}
