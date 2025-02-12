@@ -13,7 +13,7 @@ endif()
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --coverage")
 # Additional cmake configs
-# MANUAL SECTION: {{ generateUUID(sourcename ~ "cmake-config") }}
+# MANUAL SECTION: user-defined-config
 # MANUAL SECTION END
 
 include(FetchContent)
@@ -26,17 +26,17 @@ set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
 
 enable_testing()
-# MANUAL SECTION: {{ generateUUID(sourcename ~ "cmake-default") }}
+# MANUAL SECTION: user-defined-default
 # MANUAL SECTION END
 include_directories(
   {{ sourcedirname | safe }}
-# MANUAL SECTION: {{ generateUUID(sourcename ~ "cmake-incdirs") }}
+# MANUAL SECTION: user-defined-incdirs
 # MANUAL SECTION END
 )
 add_library(target SHARED target_{{ sourcename }}.cc)
 add_executable(test_{{ sourcename }}
   test_{{ sourcename }}.cc
-# MANUAL SECTION: {{ generateUUID(sourcename ~ "cmake-sources") }}
+# MANUAL SECTION: user-defined-sources
 # MANUAL SECTION END
 )
 set_target_properties(test_{{ sourcename }} PROPERTIES LINK_FLAGS
@@ -46,7 +46,7 @@ target_link_libraries(test_{{ sourcename }}
   GTest::gtest_main
   GTest::gmock_main
   dl
-# MANUAL SECTION: {{ generateUUID(sourcename ~ "cmake-linklibs") }}
+# MANUAL SECTION: user-defined-linklibs
 # MANUAL SECTION END
 )
 include(GoogleTest)

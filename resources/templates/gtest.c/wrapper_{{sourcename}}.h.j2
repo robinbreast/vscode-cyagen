@@ -45,7 +45,7 @@ public:
   ~Mock() { MockBroker::getInstance().set(nullptr); }
 
   /// stub functions
-  // MANUAL SECTION: {{ generateUUID(sourcename ~ "stub") }}
+  // MANUAL SECTION: user-defined-stub
   // MOCK_METHOD(int, stubExample, (int));
   // MANUAL SECTION END
 
@@ -76,7 +76,7 @@ public:
 extern "C"
 {
 /// stub functions
-// MANUAL SECTION: {{ generateUUID(sourcename ~ "stub-functions") }}
+// MANUAL SECTION: user-defined-stub-functions
 /* example code
 int stubExample(int arg)
 {
@@ -95,11 +95,11 @@ int stubExample(int arg)
 {{ fnc.rtype }} {{ fnc.name }}({{ fnc.args }})
 {{ '{' }}
   LOG_WRAP("before");
-  // MANUAL SECTION: {{ generateUUID(fnc.name ~ "wrapper-before") }}
+  // MANUAL SECTION: user-defined-{{ fnc.name }}-wrapper-before
   // MANUAL SECTION END
   {% if fnc.rtype != 'void' %}const {{ fnc.rtype }} result = {% endif %}CALL_MOCK_FUNCTION({{ fnc.name }}{% if fnc.anames is defined and fnc.anames != '' %}, {{ fnc.anames }}{% else %}{% endif %});
   LOG_WRAP("after");
-  // MANUAL SECTION: {{ generateUUID(fnc.name ~ "wrapper-after") }}
+  // MANUAL SECTION: user-defined-{{ fnc.name }}-wrapper-after
   // MANUAL SECTION END
   return{% if fnc.rtype != 'void' %} result{% endif %};
 {{ '}' }}

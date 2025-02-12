@@ -3,6 +3,7 @@
 import * as path from "path";
 import * as fs from "fs";
 import * as vscode from "vscode";
+import { getSourceDirname, renderString } from "./utils";
 
 export class Parser {
   public static getInstance(): Parser {
@@ -32,7 +33,7 @@ export class Parser {
     // remove all the comments
     const regex = /(\/\*([^*]|[\r\n]|(\*+([^*\/]|[\r\n])))*\*+\/)|(\/\/.*)/gi;
     this._code = this._code.replace(regex, "");
-    // parse c file and build json data
+    // parse c/c++/header file and build json data
     this.getIncs();
     this.getTypedefs();
     this.getFncs();
@@ -291,27 +292,13 @@ export function generate(
   tempPath: string,
   outputFilePath: string
 ) {
-  const nunjucks = require("nunjucks");
-  const env = nunjucks.configure();
-  const generateUUID = require("./uuidGenerator");
-  const os = require("os");
-  env.addGlobal("generateUUID", generateUUID);
   const tempString = fs.readFileSync(tempPath, "utf8");
-  let sourcedirname = path
-    .relative(
-      path.dirname(outputFilePath),
-      path.dirname(jsonData.sourceFilePath)
-    )
-    .split("/")
-    .join(path.sep);
-  if (os.platform() === "win32") {
-    sourcedirname = sourcedirname.replace(/\\/g, "\\\\");
-  }
+  const sourcedirname = getSourceDirname(outputFilePath, jsonData.sourceFilePath);
   let outputString = "";
   try {
-    outputString = nunjucks.renderString(tempString, {
+    outputString = renderString(tempString, {
       ...jsonData,
-      ...{ sourcedirname: `${sourcedirname}` },
+      ...{ sourcename: jsonData.sourcename, sourcedirname: `${sourcedirname}` },
     });
   } catch (error) {
     const msg = `\"${tempPath}\":\n${error}`;
@@ -323,22 +310,22 @@ export function generate(
     fs.mkdirSync(path.dirname(outputFilePath), { recursive: true });
   }
   if (fs.existsSync(outputFilePath)) {
-    // Extract the manual sections from the legacy file using UUIDs
+    // Extract the manual sections from the legacy file using IDs
     const manualSections = [
       ...fs
         .readFileSync(outputFilePath, "utf8")
-        .matchAll(/MANUAL SECTION: ([a-f0-9-]+)(.*?)MANUAL SECTION END/gs),
+        .matchAll(/MANUAL SECTION: ([a-zA-Z0-9_-]+)(.*?)MANUAL SECTION END/gs),
     ];
     // Merge the rendered template with the preserved manual sections
     if (manualSections.length > 0) {
-      manualSections.forEach(([section, uuid, content]) => {
+      manualSections.forEach(([section, id, content]) => {
         const sectionPattern = new RegExp(
-          `MANUAL SECTION: ${uuid}.*?MANUAL SECTION END`,
+          `MANUAL SECTION: ${id}.*?MANUAL SECTION END`,
           "gs"
         );
         outputString = outputString.replace(
           sectionPattern,
-          `MANUAL SECTION: ${uuid}` + content + "MANUAL SECTION END"
+          `MANUAL SECTION: ${id}` + content + "MANUAL SECTION END"
         );
       });
     }

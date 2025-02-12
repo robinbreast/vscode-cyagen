@@ -2,7 +2,7 @@
   "name": "vscode-cyagen",
   "displayName": "vscode-cyagen",
   "description": "",
-  "version": "0.1.4",
+  "version": "0.2.0",
   "keywords": [
     "c",
     "cyagen",
@@ -35,6 +35,7 @@
   "icon": "resources/images/cyagen.png",
   "activationEvents": [
     "onLanguage:c",
+    "onLanguage:cpp",
     "explorer"
   ],
   "contributes": {
@@ -113,12 +114,17 @@
             {
               "label": "gtest",
               "templateFolder": "${extensionPath}/resources/templates/gtest",
-              "outputFolder": "${fileDirname}/../tst/gtest/test_@sourcename@"
+              "outputFolder": "${fileDirname}/../tst/gtest/test_{{sourcename}}"
+            },
+            {
+              "label": "gtest.c",
+              "templateFolder": "${extensionPath}/resources/templates/gtest.c",
+              "outputFolder": "${fileDirname}/../tst/gtest/test_{{sourcename}}"
             },
             {
               "label": "cantata",
               "templateFolder": "${extensionPath}/resources/templates/cantata",
-              "outputFolder": "${fileDirname}/../tst/ut/ut_@sourcename@"
+              "outputFolder": "${fileDirname}/../tst/ut/ut_{{sourcename}}"
             }
           ],
           "description": "templates to render the identifiers in the current C file"
@@ -157,7 +163,7 @@
     "esbuild": "^0.18.6",
     "eslint": "^8.39.0",
     "glob": "^8.1.0",
-    "mocha": "^10.2.0",
+    "mocha": "^10.8.2",
     "typescript": "^5.0.4"
   },
   "dependencies": {

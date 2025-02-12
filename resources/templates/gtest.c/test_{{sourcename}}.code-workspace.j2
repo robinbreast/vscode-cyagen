@@ -4,6 +4,10 @@
       "name": "test_{{ sourcename }}",
       "description": "test folder",
       "path": "./"
+    },
+    {
+      "name": "SUT",
+      "path": "{{ sourcedirname | safe }}"
     }
   ],
   "extensions": {
@@ -13,6 +17,9 @@
   },
   "settings": {
     "vscode-cyagen.currentTargetSource": "{{ sourcedirname | safe }}/{{ sourcename }}.c",
-    "lcov.path": "build/cleaned_coverage.info"
+    "lcov.path": "build/cleaned_coverage.info",
+    "github.copilot.chat.testGeneration.instructions": [
+      "file": ".copilot-test-instructions.md"
+    ]
   },
 }

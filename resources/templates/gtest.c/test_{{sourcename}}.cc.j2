@@ -2,7 +2,7 @@
 
 #include "wrapper_{{ sourcename }}.h"
 
-// MANUAL SECTION: {{ generateUUID(sourcename ~ "global") }}
+// MANUAL SECTION: user-defined-global
 // MANUAL SECTION END
 
 /// test fixture for test case
@@ -18,12 +18,12 @@ protected:
     VARIABLE_INITIALIZE({{ var.name }});
   {%- endif %}
 {%- endfor %}
-    // MANUAL SECTION: {{ generateUUID(sourcename ~ "setup") }}
+    // MANUAL SECTION: user-defined-setup
     // MANUAL SECTION END
   }
   void TearDown() override
   {
-    // MANUAL SECTION: {{ generateUUID(sourcename ~ "teardown") }}
+    // MANUAL SECTION: user-defined-teardown
     // MANUAL SECTION END
   }
 };
@@ -34,13 +34,13 @@ TEST_F({{ sourcename | capitalize }}, {{ fnc.name }})
 {
   Mock mock;
   ::testing::Sequence seq;
-  // MANUAL SECTION: {{ generateUUID(fnc.name) }}
+  // MANUAL SECTION: user-defined-{{ fnc.name }}
   // MANUAL SECTION END
 }
 {% endfor %}
 
 /// add yet another tests
-// MANUAL SECTION: {{ generateUUID(sourcename ~ "yet-another-tests") }}
+// MANUAL SECTION: user-defined-yet-another-tests
 // MANUAL SECTION END
 
 int main(int argc, char **argv)

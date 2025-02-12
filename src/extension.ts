@@ -4,6 +4,7 @@ import * as vscode from "vscode";
 import * as path from "path";
 import * as fs from "fs";
 import * as cyagen from "./cyagen";
+import { getSourceDirname, renderString } from "./utils";
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
@@ -20,7 +21,7 @@ export function activate(context: vscode.ExtensionContext) {
         "LOCAL_STATIC_VARIABLE"
       );
       const filepath = vscode.window.activeTextEditor?.document.uri.fsPath;
-      if (filepath && filepath.endsWith(".c")) {
+      if (filepath) {
         const extensionPath = context.extensionPath;
         const fileDirname = path.join(filepath, "..");
         const quickPickItems = templates.map((command: any) => ({
@@ -32,12 +33,20 @@ export function activate(context: vscode.ExtensionContext) {
         console.log(`extensionPath=${extensionPath}`);
         const sourceFilename = path.basename(filepath);
         const sourcename = path.basename(filepath, path.extname(filepath));
-        const parser = cyagen.parse(filepath, sourcename, lsvMacroName);
+        const sourcedirname = getSourceDirname(fileDirname, filepath);
+        let jsonData: any = {
+          sourcename: sourcename,
+          sourcedirname: sourcedirname,
+        };
+        if (filepath.endsWith(".c")) {
+          const parser = cyagen.parse(filepath, sourcename, lsvMacroName);
+          jsonData = parser.jsonData;
+        }
         vscode.window
           .showQuickPick(quickPickItems)
           .then(async (selectedItem) => {
             if (selectedItem) {
-              console.log(parser.jsonData);
+              console.log(jsonData);
               const templateFolder = selectedItem.templateFolder
                 .replace(/\$\{fileDirname\}/, fileDirname)
                 .replace(/\$\{extensionPath\}/, extensionPath)
@@ -51,7 +60,7 @@ export function activate(context: vscode.ExtensionContext) {
                 fs.statSync(templateFolder).isDirectory() &&
                 fs.readdirSync(templateFolder).length > 0
               ) {
-                generateFiles(parser.jsonData, templateFolder, outputFolder);
+                generateFiles(jsonData, templateFolder, outputFolder);
                 const msg = `${selectedItem.label} script for ${sourceFilename} generated!`;
                 vscode.window.showInformationMessage(msg);
               } else {
@@ -77,7 +86,7 @@ export function activate(context: vscode.ExtensionContext) {
             }
           });
       } else {
-        vscode.window.showInformationMessage("no c file found!");
+        vscode.window.showInformationMessage("No supported file found!");
       }
     })
   );
@@ -237,29 +246,28 @@ function generateFiles(jsonData: any, tempDir: string, outputDir: string) {
     }
     files.forEach((file: any) => {
       const filePath = path.join(tempDir, file);
-      console.log(`Checking templete file: ${filePath}`);
+      console.log(`Checking template file: ${filePath}`);
       fs.stat(filePath, (err, stats) => {
         if (err) {
           console.error(`Error reading file stats: ${filePath}`);
           return;
         }
+        const renderedFileName = renderString(file, jsonData);
         if (stats.isDirectory()) {
           generateFiles(
             jsonData,
             filePath,
-            path.join(
-              outputDir,
-              file.replace("@sourcename@", jsonData.sourcename)
-            )
+            path.join(outputDir, renderedFileName)
           );
-        } else if (stats.isFile() && path.extname(filePath) === ".njk") {
-          const outputFilePath = path.join(
-            outputDir,
-            file
-              .replace("@sourcename@", jsonData.sourcename)
-              .replace(/\.njk$/, "")
-          );
-          cyagen.generate(jsonData, filePath, outputFilePath);
+        } else if (stats.isFile()) {
+          const ext = path.extname(filePath);
+          if (ext === ".njk" || ext === ".j2") {
+            const outputFilePath = path.join(outputDir, renderedFileName.replace(/\.(njk|j2)$/, ""));
+            cyagen.generate(jsonData, filePath, outputFilePath);
+          } else {
+            const outputFilePath = path.join(outputDir, renderedFileName);
+            fs.copyFileSync(filePath, outputFilePath);
+          }
         }
       });
     });

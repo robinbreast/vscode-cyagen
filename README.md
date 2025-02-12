@@ -35,6 +35,12 @@ No known issues yet
 
 ## Release Notes
 
+## [0.2.0]
+- allow header files and C++ files as source file but to render with minimum dictionary data
+- supports .j2 extension for template files
+- `uuid` is not used anymore for manual sections
+## [0.1.4]
+- update modules for vulnerabilities
 ## [0.1.3]
 - fix error in parsing argument list with array pattern like 'int arg[]'
 ## [0.1.2]
