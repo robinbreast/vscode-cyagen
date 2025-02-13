@@ -64,11 +64,6 @@ export function activate(context: vscode.ExtensionContext) {
                 fs.readdirSync(templateFolder).length > 0
               ) {
                 const renderedOutputFolder = renderString(outputFolder, jsonData);
-                const sutLinkPath = path.join(renderedOutputFolder, "sut", sourceFilename);
-                if (!fs.existsSync(path.dirname(sutLinkPath))) {
-                  fs.mkdirSync(path.dirname(sutLinkPath), { recursive: true });
-                }
-                fs.symlinkSync(filepath, sutLinkPath, "file");
                 generateFiles(jsonData, templateFolder, renderedOutputFolder);
                 const msg = `${selectedItem.label} script for ${sourceFilename} generated!`;
                 vscode.window.showInformationMessage(msg);

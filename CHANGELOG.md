@@ -1,5 +1,8 @@
 # Change Log
 
+## [0.2.1]
+- remove symbolic link
+- fix default template files
 ## [0.2.0]
 - allow header files and C++ files as source file but to render with minimum dictionary data
 - supports .j2 extension for template files
