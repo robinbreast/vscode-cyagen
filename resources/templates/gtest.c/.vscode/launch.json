@@ -5,11 +5,11 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Run Google Test",
+      "name": "Debug Google Test",
       "type": "cppdbg",
       "request": "launch",
-      "program": "${cmake.testProgram}",
-      "args": [ "${cmake.testArgs}" ],
+      "program": "${command:cmake.launchTargetPath}",
+      "args": [],
       "stopAtEntry": false,
       "cwd": "${workspaceFolder}",
       "environment": [],
