@@ -35,6 +35,8 @@ No known issues yet
 
 ## Release Notes
 
+## [0.2.2]
+- security update
 ## [0.2.1]
 - remove symbolic link
 - fix default template files
