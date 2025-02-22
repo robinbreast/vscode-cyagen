@@ -1,5 +1,7 @@
 # Change Log
 
+## [0.2.3]
+- update gtest template
 ## [0.2.2]
 - security update
 ## [0.2.1]
