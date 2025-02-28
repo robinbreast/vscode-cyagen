@@ -33,6 +33,10 @@ include_directories(
 # MANUAL SECTION: user-defined-incdirs
 # MANUAL SECTION END
 )
+add_definitions(
+# MANUAL SECTION: user-defined-definitions
+# MANUAL SECTION END
+)
 add_library(target SHARED target_{{ sourcename }}.cc)
 add_executable(test_{{ sourcename }}
   test_{{ sourcename }}.cc
