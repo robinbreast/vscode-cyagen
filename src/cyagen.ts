@@ -293,48 +293,57 @@ export function generate(
   tempPath: string,
   outputFilePath: string
 ) {
-  const tempString = fs.readFileSync(tempPath, "utf8");
-  const sourcedirname = getSourceDirname(outputFilePath, jsonData.sourceFilePath);
   let outputString = "";
   try {
-    outputString = renderString(tempString, {
-      ...jsonData,
-      ...{ sourcename: jsonData.sourcename, sourcedirname: `${sourcedirname}` },
+    const tempString = fs.readFileSync(tempPath, "utf8");
+    const sourcedirname = getSourceDirname(outputFilePath, jsonData.sourceFilePath);
+    try {
+      outputString = renderString(tempString, {
+        ...jsonData,
+        ...{ sourcename: jsonData.sourcename, sourcedirname: `${sourcedirname}` },
+      });
+    } catch (error) {
+      const msg = `\"${tempPath}\":\n${error}`;
+      console.log(msg);
+      vscode.window.showWarningMessage(msg);
+      return outputString;
+    }
+    console.log(`Generating ${outputFilePath}`);
+    if (!fs.existsSync(path.dirname(outputFilePath))) {
+      fs.mkdirSync(path.dirname(outputFilePath), { recursive: true });
+    }
+    if (fs.existsSync(outputFilePath)) {
+      // Extract the manual sections from the legacy file using IDs
+      const manualSections = [
+        ...fs
+          .readFileSync(outputFilePath, "utf8")
+          .matchAll(/MANUAL SECTION: ([a-zA-Z0-9_-]+)(.*?)MANUAL SECTION END/gs),
+      ];
+      // Merge the rendered template with the preserved manual sections
+      if (manualSections.length > 0) {
+        manualSections.forEach(([section, id, content]) => {
+          const sectionPattern = new RegExp(
+            `MANUAL SECTION: ${id}.*?MANUAL SECTION END`,
+            "gs"
+          );
+          outputString = outputString.replace(
+            sectionPattern,
+            `MANUAL SECTION: ${id}` + content + "MANUAL SECTION END"
+          );
+        });
+      }
+    }
+    fs.writeFile(outputFilePath, outputString, (err) => {
+      if (err) {
+        const msg = `Error writing file: ${outputFilePath} - ${err.message}`;
+        console.error(msg);
+        vscode.window.showErrorMessage(msg);
+      }
     });
   } catch (error) {
-    const msg = `\"${tempPath}\":\n${error}`;
-    console.log(msg);
-    vscode.window.showWarningMessage(msg);
+    const msg = `Error reading template file: ${tempPath} - ${error instanceof Error ? error.message : String(error)}`;
+    console.error(msg);
+    vscode.window.showErrorMessage(msg);
   }
-  console.log(`Generating ${outputFilePath}`);
-  if (!fs.existsSync(path.dirname(outputFilePath))) {
-    fs.mkdirSync(path.dirname(outputFilePath), { recursive: true });
-  }
-  if (fs.existsSync(outputFilePath)) {
-    // Extract the manual sections from the legacy file using IDs
-    const manualSections = [
-      ...fs
-        .readFileSync(outputFilePath, "utf8")
-        .matchAll(/MANUAL SECTION: ([a-zA-Z0-9_-]+)(.*?)MANUAL SECTION END/gs),
-    ];
-    // Merge the rendered template with the preserved manual sections
-    if (manualSections.length > 0) {
-      manualSections.forEach(([section, id, content]) => {
-        const sectionPattern = new RegExp(
-          `MANUAL SECTION: ${id}.*?MANUAL SECTION END`,
-          "gs"
-        );
-        outputString = outputString.replace(
-          sectionPattern,
-          `MANUAL SECTION: ${id}` + content + "MANUAL SECTION END"
-        );
-      });
-    }
-  }
-  fs.writeFile(outputFilePath, outputString, (err) => {
-    if (err) {
-      console.error(`Error writing file: ${outputFilePath}`);
-    }
-  });
   return outputString;
 }

@@ -3,9 +3,18 @@
 import * as vscode from "vscode";
 import * as path from "path";
 import * as fs from "fs";
+import { promises as fsPromises } from "fs";
 import * as cyagen from "./cyagen";
 import { getSourceDirname, renderString } from "./utils";
-import { json } from "stream/consumers";
+
+/**
+ * Template configuration entry from user settings
+ */
+interface TemplateConfig {
+  label: string;
+  templateFolder: string;
+  outputFolder: string;
+}
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
@@ -16,7 +25,7 @@ export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.commands.registerCommand("vscode-cyagen.generate", () => {
       const config = vscode.workspace.getConfiguration("vscode-cyagen");
-      const templates = config.get("templates", []);
+      const templates: TemplateConfig[] = config.get("templates", []);
       const lsvMacroName = config.get(
         "localStaticVariableMacroName",
         "LOCAL_STATIC_VARIABLE"
@@ -25,7 +34,7 @@ export function activate(context: vscode.ExtensionContext) {
       if (filepath) {
         const extensionPath = context.extensionPath;
         const fileDirname = path.join(filepath, "..");
-        const quickPickItems = templates.map((command: any) => ({
+        const quickPickItems = templates.map((command) => ({
           label: command.label,
           templateFolder: command.templateFolder,
           outputFolder: command.outputFolder,
@@ -65,11 +74,22 @@ export function activate(context: vscode.ExtensionContext) {
               ) {
                 const renderedOutputFolder = renderString(outputFolder, jsonData);
                 const sutLinkPath = path.join(renderedOutputFolder, "sut", sourceFilename);
-                if (!fs.existsSync(path.dirname(sutLinkPath))) {
-                  fs.mkdirSync(path.dirname(sutLinkPath), { recursive: true });
+                try {
+                  if (!fs.existsSync(path.dirname(sutLinkPath))) {
+                    fs.mkdirSync(path.dirname(sutLinkPath), { recursive: true });
+                  }
+                  // Remove existing symlink if it exists
+                  if (fs.existsSync(sutLinkPath)) {
+                    fs.unlinkSync(sutLinkPath);
+                  }
+                  fs.symlinkSync(filepath, sutLinkPath, "file");
+                } catch (error) {
+                  const msg = `Failed to create symlink: ${error instanceof Error ? error.message : String(error)}`;
+                  console.error(msg);
+                  vscode.window.showErrorMessage(msg);
+                  return;
                 }
-                fs.symlinkSync(filepath, sutLinkPath, "file");
-                generateFiles(jsonData, templateFolder, renderedOutputFolder);
+                await generateFiles(jsonData, templateFolder, renderedOutputFolder);
                 const msg = `${selectedItem.label} script for ${sourceFilename} generated!`;
                 vscode.window.showInformationMessage(msg);
               } else {
@@ -247,35 +267,38 @@ async function getFolderUri(
   return result;
 }
 
-function generateFiles(jsonData: any, tempDir: string, outputDir: string) {
-  fs.readdir(tempDir, (err: any, files: any) => {
-    if (err) {
-      console.error(`Error reading directory: ${tempDir}`);
-      return;
-    }
-    files.forEach((file: any) => {
+async function generateFiles(jsonData: any, tempDir: string, outputDir: string): Promise<void> {
+  try {
+    const files = await fsPromises.readdir(tempDir);
+    for (const file of files) {
       const filePath = path.join(tempDir, file);
       console.log(`Checking template file: ${filePath}`);
-      fs.stat(filePath, (err, stats) => {
-        if (err) {
-          console.error(`Error reading file stats: ${filePath}`);
-          return;
-        }
+      try {
+        const stats = await fsPromises.stat(filePath);
         const renderedFileName = renderString(file, jsonData);
         const outputFilePath = path.join(outputDir, renderedFileName);
         if (stats.isDirectory()) {
-          generateFiles(jsonData, filePath, outputFilePath);
+          await generateFiles(jsonData, filePath, outputFilePath);
         } else if (stats.isFile()) {
           if (!fs.existsSync(outputDir)) {
-            fs.mkdirSync(outputDir, { recursive: true });
+            await fsPromises.mkdir(outputDir, { recursive: true });
           }
-          if (filePath.endsWith(".njk") || filePath.endsWith(".j2")) {
-            cyagen.generate(jsonData, filePath, outputFilePath.replace(/\.(njk|j2)$/, ""));
+          const templateExtRegex = /\.(njk|j2)$/;
+          if (templateExtRegex.test(filePath)) {
+            cyagen.generate(jsonData, filePath, outputFilePath.replace(templateExtRegex, ""));
           } else {
-            fs.copyFileSync(filePath, outputFilePath);
+            await fsPromises.copyFile(filePath, outputFilePath);
           }
         }
-      });
-    });
-  });
+      } catch (error) {
+        const msg = `Error processing file ${filePath}: ${error instanceof Error ? error.message : String(error)}`;
+        console.error(msg);
+        vscode.window.showWarningMessage(msg);
+      }
+    }
+  } catch (error) {
+    const msg = `Error reading template directory ${tempDir}: ${error instanceof Error ? error.message : String(error)}`;
+    console.error(msg);
+    vscode.window.showErrorMessage(msg);
+  }
 }
