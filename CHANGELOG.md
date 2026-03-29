@@ -1,5 +1,9 @@
 # Change Log
 
+## [0.2.4]
+- security updates
+- improve documentation: quick start, command skills reference, template authoring, and contributing guide
+- clarify documented generation behavior includes output `sut/<sourceFileName>` symlink creation
 ## [0.2.3]
 - update gtest template
 ## [0.2.2]

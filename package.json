@@ -1,8 +1,8 @@
 {
   "name": "vscode-cyagen",
   "displayName": "vscode-cyagen",
-  "description": "",
-  "version": "0.2.3",
+  "description": "Generate C test scaffolding from source files using customizable Nunjucks templates.",
+  "version": "0.2.4",
   "keywords": [
     "c",
     "cyagen",
@@ -168,5 +168,14 @@
   },
   "dependencies": {
     "nunjucks": "^3.2.4"
+  },
+  "overrides": {
+    "glob": {
+      "minimatch": "^5.1.8"
+    },
+    "mocha": {
+      "minimatch": "^5.1.8",
+      "serialize-javascript": "^7.0.3"
+    }
   }
 }
