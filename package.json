@@ -2,7 +2,7 @@
   "name": "vscode-cyagen",
   "displayName": "vscode-cyagen",
   "description": "Generate C test scaffolding from source files using customizable Nunjucks templates.",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "keywords": [
     "c",
     "cyagen",
@@ -21,16 +21,16 @@
   "license": "MIT",
   "author": {
     "name": "Kihoa Nam",
-    "email": "robinbreast1412@gamil.com"
+    "email": "robinbreast1412@gmail.com"
   },
   "homepage": "https://github.com/robinbreast/vscode-cyagen/blob/main/README.md",
   "repository": {
     "type": "git",
-    "uri": "https://github.com/robinbreast/vscode-cyagen.git"
+    "url": "https://github.com/robinbreast/vscode-cyagen.git"
   },
   "bugs": {
     "url": "https://github.com/robinbreast/vscode-cyagen/issues",
-    "email": "robinbreast1412@gamil.com"
+    "email": "robinbreast1412@gmail.com"
   },
   "icon": "resources/images/cyagen.png",
   "activationEvents": [
