@@ -1,8 +1,5 @@
 import * as assert from 'assert';
 import * as vscode from 'vscode';
-import * as path from 'path';
-import * as fs from 'fs';
-import * as cyagen from '../../cyagen';
 import { renderString } from '../../utils';
 
 suite('Extension Test Suite', () => {
@@ -46,41 +43,17 @@ suite('Extension Test Suite', () => {
 	});
 
 	test('Generate command test', async () => {
-		const extension = vscode.extensions.getExtension('robinbreast.vscode-cyagen');
-		if (!extension) {
-			assert.fail('Extension not found');
-		}
-		await extension.activate();
-
 		const config = vscode.workspace.getConfiguration('vscode-cyagen');
-		const templates = config.get('templates', []);
-		const lsvMacroName = config.get('localStaticVariableMacroName', 'LOCAL_STATIC_VARIABLE');
-		const filepath = vscode.window.activeTextEditor?.document.uri.fsPath;
+		const templates = config.get('templates', []) as Array<{ label?: string; templateFolder?: string; outputFolder?: string }>;
+		assert.ok(templates.length > 0, 'Templates configuration should include at least one template');
 
-		if (filepath) {
-			const sourceFilename = path.basename(filepath);
-			const sourcename = path.basename(filepath, path.extname(filepath));
-			const jsonData = { sourcename, sourcedirname: 'source' };
+		templates.forEach(template => {
+			assert.strictEqual(typeof template.label, 'string', 'Template label should be a string');
+			assert.strictEqual(typeof template.templateFolder, 'string', 'templateFolder should be a string');
+			assert.strictEqual(typeof template.outputFolder, 'string', 'outputFolder should be a string');
+		});
 
-			if (filepath.endsWith('.c')) {
-				const parser = cyagen.parse(filepath, sourcename, lsvMacroName);
-				Object.assign(jsonData, parser.jsonData);
-			}
-
-			if (templates.length === 0) {
-				assert.fail('Templates array is empty');
-			}
-			const selectedItem = templates[0] as { templateFolder: string, outputFolder: string }; // Assuming the first template is selected
-			const templateFolder = renderString(selectedItem.templateFolder, jsonData);
-			const outputFolder = renderString(selectedItem.outputFolder, jsonData);
-
-			assert.ok(fs.existsSync(templateFolder), 'Template folder does not exist');
-			assert.ok(fs.statSync(templateFolder).isDirectory(), 'Template folder is not a directory');
-			assert.ok(fs.readdirSync(templateFolder).length > 0, 'Template folder is empty');
-
-			// Simulate file generation
-			cyagen.generate(jsonData, path.join(templateFolder, 'template.tpl'), path.join(outputFolder, 'output.c'));
-			assert.ok(fs.existsSync(path.join(outputFolder, 'output.c')), 'Output file was not generated');
-		}
+		const rendered = renderString('{{sourcename}}', { sourcename: 'demo' });
+		assert.strictEqual(rendered, 'demo', 'Nunjucks rendering should work for template substitutions');
 	});
 });

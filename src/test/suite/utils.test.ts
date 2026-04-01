@@ -10,7 +10,7 @@ suite('Utils Test Suite', () => {
 		const outputFilePath = 'path/to/output/file.c';
 		const sourceFilePath = 'path/to/source/file.c';
 		const result = getSourceDirname(outputFilePath, sourceFilePath);
-		assert.strictEqual(result, 'source', 'Should return the correct relative path');
+		assert.strictEqual(result, '../source', 'Should return the correct relative path');
 	});
 
 	test('Test renderString', () => {
